@@ -144,7 +144,7 @@ fi
 # do MySQL uma única vez, só para criar o banco e o usuário da aplicação;
 # ela NÃO é salva em lugar nenhum.
 MYSQL_ROOT_ARGS=()
-ERRO_CONEXAO="$(mysql -e "SELECT 1;" 2>&1 >/dev/null)"
+ERRO_CONEXAO="$(mysql -e "SELECT 1;" 2>&1 >/dev/null)" || true
 if [[ -n "$ERRO_CONEXAO" ]]; then
 	aviso "Conexão sem senha (auth_socket) falhou:"
 	echo "  $ERRO_CONEXAO"
@@ -152,7 +152,7 @@ if [[ -n "$ERRO_CONEXAO" ]]; then
 		read -r -s -p "Senha de root do MySQL: " MYSQL_ROOT_PASS
 		echo
 		MYSQL_ROOT_ARGS=(-u root -p"${MYSQL_ROOT_PASS}")
-		ERRO_CONEXAO="$(mysql "${MYSQL_ROOT_ARGS[@]}" -e "SELECT 1;" 2>&1 >/dev/null)"
+		ERRO_CONEXAO="$(mysql "${MYSQL_ROOT_ARGS[@]}" -e "SELECT 1;" 2>&1 >/dev/null)" || true
 		if [[ -n "$ERRO_CONEXAO" ]]; then
 			echo "  $ERRO_CONEXAO"
 			falhar "Ainda não foi possível conectar ao MySQL com a senha informada."
