@@ -144,16 +144,25 @@ fi
 # do MySQL uma única vez, só para criar o banco e o usuário da aplicação;
 # ela NÃO é salva em lugar nenhum.
 MYSQL_ROOT_ARGS=()
-ERRO_CONEXAO="$(mysql -e "SELECT 1;" 2>&1 >/dev/null)" || true
-if [[ -n "$ERRO_CONEXAO" ]]; then
+set +e
+ERRO_CONEXAO="$(mysql -e "SELECT 1;" 2>&1 >/dev/null)"
+CODIGO_CONEXAO=$?
+set -e
+if [[ $CODIGO_CONEXAO -ne 0 ]]; then
 	aviso "Conexão sem senha (auth_socket) falhou:"
 	echo "  $ERRO_CONEXAO"
 	if confirmar "Esse servidor exige senha de root do MySQL. Digitar a senha agora?"; then
 		read -r -s -p "Senha de root do MySQL: " MYSQL_ROOT_PASS
 		echo
 		MYSQL_ROOT_ARGS=(-u root -p"${MYSQL_ROOT_PASS}")
-		ERRO_CONEXAO="$(mysql "${MYSQL_ROOT_ARGS[@]}" -e "SELECT 1;" 2>&1 >/dev/null)" || true
-		if [[ -n "$ERRO_CONEXAO" ]]; then
+		set +e
+		ERRO_CONEXAO="$(mysql "${MYSQL_ROOT_ARGS[@]}" -e "SELECT 1;" 2>&1 >/dev/null)"
+		CODIGO_CONEXAO=$?
+		set -e
+		# O aviso "Using a password on the command line..." sempre aparece no
+		# stderr quando se usa -p"senha", mesmo com a senha certa - por isso
+		# checamos o código de saída real, não se o stderr está vazio.
+		if [[ $CODIGO_CONEXAO -ne 0 ]]; then
 			echo "  $ERRO_CONEXAO"
 			falhar "Ainda não foi possível conectar ao MySQL com a senha informada."
 		fi
