@@ -107,7 +107,7 @@
 					<td class="<?php echo $class;?>" style="cursor:help"><?php echo $status?></td>
 					<td><a href="subtelas/cliques.php?mensagem=<?php echo (int) $row['id']?>" class="ajax"><?php echo (int) $row['cliques']?></a></td>
 					<td><a href="subtelas/visualizacoes.php?mensagem=<?php echo (int) $row['id']?>" class="ajax"><?php echo (int) $row['visualizacoes']?></a></td>
-					<td><?php echo date('d/m/Y H:i',strtotime( $row['data_envio_ini']));?></td>
+					<td><?php echo $row['data_envio_ini'] ? date('d/m/Y H:i',strtotime($row['data_envio_ini'])) : '-'; ?></td>
 					<td>
 					<?php if($row['data_envio_fin'] > 0): ?>
 						<?php echo date('d/m/Y H:i',strtotime($row['data_envio_fin']));?>
