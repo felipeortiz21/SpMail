@@ -64,7 +64,8 @@
 		</head>
 		<body>';
 	$emailCompleto .= $mensagemPersonalizada;
-	$emailCompleto .= "<img src=\"".$caminhoURL."/contador.php?email=".urlencode($destinatario)."&mensagem=".$id."\" height=\"90\" style=\"height: 90px; width: auto; text-align: center; border: none;\" alt=\"contador\" />";
+	// Pixel de rastreamento 1x1 (invisível) - ver comentário equivalente em enviar.php
+$emailCompleto .= "<img src=\"".$caminhoURL."/contador.php?email=".urlencode($destinatario)."&mensagem=".$id."\" width=\"1\" height=\"1\" style=\"width:1px;height:1px;border:0;display:block;\" alt=\"\" />";
 	// Removido a pedido: link de "visualizar no navegador" e "Cancelar
 	// Inscrição" - o email enviado passa a ter só o conteúdo criado na campanha.
 	$emailCompleto .= '</body></html>';

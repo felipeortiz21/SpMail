@@ -200,7 +200,11 @@
 					</head>
 					<body>';
 				$emailCompleto .= $mensagemPersonalizada;
-        		$emailCompleto .= "<img src=\"".$caminhoURL."/contador.php?email=".urlencode($emailDestino)."&mensagem=".$id."\" height=\"90\" style=\"height: 90px; width: auto; text-align: center; border: none;\" />";
+        		// Pixel de rastreamento de visualização - 1x1 de propósito (invisível), pra
+			// não aparecer como um quadrado em branco quando o cliente de email
+			// bloqueia carregamento remoto de imagem (comportamento padrão do
+			// Thunderbird/Gmail/Outlook por privacidade).
+			$emailCompleto .= "<img src=\"".$caminhoURL."/contador.php?email=".urlencode($emailDestino)."&mensagem=".$id."\" width=\"1\" height=\"1\" style=\"width:1px;height:1px;border:0;display:block;\" alt=\"\" />";
 				// Removido a pedido: link de "visualizar no navegador" e "Cancelar
 				// Inscrição" - o email enviado passa a ter só o conteúdo criado na
 				// campanha. cancelamento.php continua existindo e acessível por URL
