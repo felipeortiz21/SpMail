@@ -128,7 +128,7 @@
         if($continuar){
 	        $rs = dbQuery(
 	        	$con,
-	        	"SELECT r.email as email, c.nome as nome, c.telefone as telefone
+	        	"SELECT r.email as email, MAX(c.nome) as nome, MAX(c.telefone) as telefone
 	        	 FROM restantes r
 	        	 LEFT JOIN contatos c ON c.email = r.email
 	        	 WHERE r.mensagem=? AND r.enviado='0'

@@ -233,7 +233,7 @@ if(isset($_REQUEST["mensagem"])){
 							</thead>
 							<tbody>
 								<?php
-									$cRs = dbQuery($con, "SELECT * FROM cliques WHERE mensagem = ? GROUP BY contato ORDER BY link", "i", $mRow["id"]);
+									$cRs = dbQuery($con, "SELECT contato, MAX(link) as link, MAX(data_hora) as data_hora FROM cliques WHERE mensagem = ? GROUP BY contato ORDER BY link", "i", $mRow["id"]);
 									while($cRow = mysqli_fetch_array($cRs)):
 
 									$estilo = "";
@@ -262,7 +262,7 @@ if(isset($_REQUEST["mensagem"])){
 								<?php
 									$cRs = dbQuery(
 										$con,
-										"SELECT * FROM views v WHERE mensagem = ?
+										"SELECT v.contato as contato, MAX(v.data_hora) as data_hora FROM views v WHERE mensagem = ?
 										 AND NOT EXISTS (SELECT 1 FROM cliques r WHERE v.contato = r.contato AND mensagem = ?)
 										 GROUP BY v.contato",
 										"ii",
@@ -280,7 +280,7 @@ if(isset($_REQUEST["mensagem"])){
 								<?php
 									$cRs = dbQuery(
 										$con,
-										"SELECT * FROM restantes v WHERE mensagem = ?
+										"SELECT v.email as email FROM restantes v WHERE mensagem = ?
 										 AND NOT EXISTS (SELECT 1 FROM cliques r WHERE v.email = r.contato AND mensagem = ?)
 										 AND NOT EXISTS (SELECT 1 FROM views r WHERE v.email = r.contato AND mensagem = ?)
 										 GROUP BY v.email",
