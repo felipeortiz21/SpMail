@@ -21,7 +21,8 @@ O SpMail permite enviar campanhas de email em lote usando o endereço de email d
 - Cadastro e gerenciamento de usuários do sistema, com papel de **Administrador Geral**
 - Painel de Configurações do Sistema (dados da empresa, SMTP, limites de envio, horário comercial), restrito ao Administrador Geral
 - Uso de servidor SMTP externo (via PHPMailer) ou da função `mail()` nativa do PHP
-- Retomada automática do envio em caso de interrupção
+- Retomada automática do envio em caso de interrupção, com um watchdog opcional via cron que retoma sozinho campanhas travadas (veja [Envio em lote e anti-spam](#envio-em-lote-e-anti-spam))
+- Variação aleatória (jitter) configurável no intervalo entre emails e assinatura DKIM opcional, para reduzir a chance de cair em spam em campanhas grandes
 - Acompanhamento de cliques e visualizações por campanha, com painel de estatísticas
 - Página de descadastro automática para quem não quiser mais receber emails
 - Geração automática de uma página HTML com o email completo, para quem não conseguir visualizar corretamente
@@ -80,6 +81,18 @@ Ao escrever o assunto ou o corpo do email (tela "Novo Email"), use os tokens aba
 | `{telefone}` | Telefone do contato |
 
 Um menu "Inserir Variável" acima do assunto e do editor insere o token na posição do cursor. Se o contato não tiver nome cadastrado, `{nome}` é removido do texto e a pontuação ao redor é ajustada automaticamente (ex: "Olá {nome}!" vira "Olá!" em vez de "Olá !").
+
+## Envio em lote e anti-spam
+
+O envio processa um contato por vez, respeitando o limite de "Emails por Hora" configurado, e se auto-agenda sozinho até terminar a campanha.
+
+- **Variação aleatória (jitter)**: em Configurações, o campo "Variação Aleatória (%)" faz o intervalo entre um email e outro variar em vez de ser sempre idêntico (ex: 30% faz o intervalo oscilar entre 70% e 130% do valor calculado) - evita um padrão perfeitamente constante, que provedores como Gmail/Outlook associam a comportamento de bot.
+- **DKIM (opcional)**: também em Configurações, é possível ativar a assinatura DKIM informando domínio, selector e a chave privada (formato PEM). Fica desligado por padrão - só ative se você já tiver a chave pública correspondente publicada no DNS do seu domínio.
+- **Watchdog de retomada (cron)**: o envio se auto-continua via uma chamada interna do próprio servidor; se esse elo falhar por qualquer motivo (rede, processo morto, servidor reiniciado no meio de uma campanha), ela fica parada em "Enviando" até alguém clicar em "Continuar Envios" no painel. O `install.sh` oferece configurar uma tarefa cron (a cada 2 minutos) que detecta e retoma essas campanhas sozinho - script em `projeto/cron/retomar_envios.php`. Para adicionar manualmente depois:
+  ```
+  */2 * * * * php /var/www/SpMail/projeto/cron/retomar_envios.php >/dev/null 2>&1
+  ```
+- **Diagnóstico de falhas**: quando um envio individual falha, o motivo (retornado pelo PHPMailer) fica salvo em `restantes.erro_mensagem`, junto com a linha daquele contato/campanha.
 
 ## Administrador Geral
 
