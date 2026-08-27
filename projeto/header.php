@@ -44,10 +44,10 @@
 	</head>
 	<body>
 		<header class="cabecalho">
-			<center>
+			<div class="marca">
 				<img src="<?php echo htmlspecialchars($logoTopo); ?>" alt="<?php echo htmlspecialchars($nomeEmpresa); ?>"/>
 				<h1><?php echo htmlspecialchars($nomeEmpresa); ?></h1>
-			</center>
+			</div>
 			<div class="menu">
 			<nav>
 				<ul>

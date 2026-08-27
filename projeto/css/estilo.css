@@ -67,45 +67,48 @@ a:hover{
    -------------------------------------------------------------------- */
 
 header.cabecalho{
-	text-align: center;
 	width: 100%;
 	margin: 0;
 	box-sizing: border-box;
-	padding: .6em 1em;
-	min-height: 56px;
+	padding: .7em 1.2em;
 	background: linear-gradient(135deg, var(--marca-azul) 0%, var(--marca-azul-escuro) 130%);
 	box-shadow: 0 2px 12px rgba(10, 30, 60, .18);
-	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: .6em 1.5em;
 }
 
-header.cabecalho center img{
-	width: 36px;
-	height: auto;
-	position: absolute;
-	top: 10px;
-	left: 16px;
+header.cabecalho .marca{
+	display: flex;
+	align-items: center;
+	gap: .7em;
+	flex: 0 0 auto;
+}
+
+header.cabecalho .marca img{
+	width: 34px;
+	height: 34px;
+	object-fit: contain;
 	border-radius: 6px;
 	background: rgba(255,255,255,.9);
 	padding: 3px;
+	box-sizing: border-box;
 }
 
 header.cabecalho h1{
 	color: white;
 	font-weight: 600;
-	text-align: left;
 	font-size: 1.1em;
 	margin: 0;
-	position: absolute;
-	top: 16px;
-	left: 62px;
 	letter-spacing: .2px;
+	white-space: nowrap;
 }
 
 .menu{
-	position: absolute;
-	right: 16px;
-	top: 15px;
-	min-width: 600px;
+	flex: 1 1 auto;
+	min-width: 0;
 }
 
 .menu nav{
@@ -115,22 +118,24 @@ header.cabecalho h1{
 .menu nav ul{
 	margin: 0;
 	padding: 0;
-	text-align: right;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: .2em;
 }
 
 .menu nav ul li{
-	text-align: right;
-	margin: 0 4px;
 	list-style: none;
-	display: inline-block;
 }
 
 .menu nav ul li a{
-	color: rgba(255,255,255,.75);
+	display: inline-block;
+	color: rgba(255,255,255,.8);
 	text-decoration: none;
-	font-size: .82em;
+	font-size: .85em;
 	font-weight: 500;
-	letter-spacing: .3px;
+	letter-spacing: .2px;
+	white-space: nowrap;
 	padding: .5em .7em;
 	border-radius: 6px;
 	transition: background-color .15s, color .15s;
@@ -138,7 +143,7 @@ header.cabecalho h1{
 
 .menu nav ul li a:hover{
 	color: white;
-	background-color: rgba(255,255,255,.12);
+	background-color: rgba(255,255,255,.14);
 	text-decoration: none;
 }
 
@@ -151,6 +156,14 @@ header.cabecalho h1{
 /* --------------------------------------------------------------------
    Formulários e botões (ajustes finos por cima do Pico)
    -------------------------------------------------------------------- */
+
+/* O Pico deixa select/textarea com width:100% automaticamente, mas NÃO faz
+   isso com <input> - sem esta regra, todo input (inclusive email/senha do
+   login) fica com a largura mínima padrão do navegador. */
+input:not([type=checkbox],[type=radio],[type=submit],[type=button],[type=reset],[type=file]){
+	width: 100%;
+	box-sizing: border-box;
+}
 
 input,textarea,select{
 	margin-bottom: .9em;
