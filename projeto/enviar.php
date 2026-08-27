@@ -315,7 +315,11 @@
 			sleep(segundosAleatoriosEntreEnvios($envioAtrasoMinimo, $envioAtrasoMaximo));
 		endif;
 		$local_escapado = escapeshellarg($local);
-		$exec = exec("curl --request GET $local_escapado > /dev/null 2>/dev/null &"); //Executar de forma de assínscrona e em background
+		// setsid + nohup desacopla de verdade o curl do processo do PHP-FPM -
+			// só um "&" no fim não é suficiente: o worker do PHP-FPM pode matar
+			// os processos filhos ao terminar a requisição, deixando o envio
+			// preso mesmo com o comando "em background".
+			$exec = exec("setsid nohup curl --request GET $local_escapado > /dev/null 2>&1 &");
 
 	}else{
 		//Registrar o Fim do Envio

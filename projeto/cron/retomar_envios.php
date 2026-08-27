@@ -59,7 +59,7 @@
 
 			$local = $caminhoURL . "enviar.php?id={$id}&acao=1&continuar=1&token=" . tokenContinuacaoEnvio($id);
 			$local_escapado = escapeshellarg($local);
-			exec("curl --request GET {$local_escapado} > /dev/null 2>/dev/null &");
+			exec("setsid nohup curl --request GET {$local_escapado} > /dev/null 2>&1 &");
 
 			$retomadas++;
 			echo "[" . date('Y-m-d H:i:s') . "] Retomando envio travado da mensagem #{$id}\n";
