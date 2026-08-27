@@ -9,7 +9,7 @@
 
 date_default_timezone_set('America/Sao_Paulo');
 include "libs/conexao.php";        //Conexão com o banco de dados.
-include "libs/db.php";
+include_once "libs/db.php";
 include "functions.php";
 
 if(isset($_REQUEST["email"]) && isset($_REQUEST["mensagem"])){

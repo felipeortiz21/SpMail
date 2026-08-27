@@ -8,7 +8,7 @@
 	******************************/
 	include "header.php";
 	include "libs/seguranca.php";
-	include "libs/db.php";
+	include_once "libs/db.php";
 	protegePagina();
 
 	date_default_timezone_set('America/Sao_Paulo');

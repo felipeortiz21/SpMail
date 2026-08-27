@@ -9,7 +9,7 @@
 		Contato: contato@spiralsolucoes.com
 	******************************/
 	include "libs/conexao.php";        //Conexão com o banco de dados.
-	include "libs/db.php";
+	include_once "libs/db.php";
 	include "functions.php";
 	dbQuery($con, "UPDATE contatos SET aut='0' WHERE email=?", "s", $_REQUEST['email']);
 	?>
