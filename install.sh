@@ -131,14 +131,38 @@ DB_USER="${DB_USER:-spmail_app}"
 
 DB_PASS="$(openssl rand -base64 24 | tr -d '=+/')"
 
-# Em instalação padrão do Ubuntu, root do MySQL usa auth_socket (só root do SO
-# consegue conectar sem senha via `sudo mysql`). É o que usamos aqui - a senha
-# de root do MySQL nunca é pedida nem armazenada.
-if ! mysql -e "SELECT 1;" >/dev/null 2>&1; then
-	falhar "Não foi possível conectar ao MySQL como root do sistema (sudo mysql). Configure o acesso root do MySQL manualmente e rode este script novamente."
+# Serviço do MySQL precisa estar de pé antes de tentar conectar
+if command -v systemctl >/dev/null 2>&1 && ! systemctl is-active --quiet mysql 2>/dev/null && ! systemctl is-active --quiet mariadb 2>/dev/null; then
+	aviso "Serviço do MySQL/MariaDB não parece estar ativo. Tentando iniciar..."
+	systemctl start mysql 2>/dev/null || systemctl start mariadb 2>/dev/null || true
 fi
 
-mysql <<-SQL
+# Em instalação padrão do Ubuntu (recém instalada), root do MySQL usa
+# auth_socket (só root do SO consegue conectar sem senha via `sudo mysql`).
+# Mas se esse servidor já teve o root trocado para senha (caching_sha2_password
+# ou outro), a conexão sem senha falha - nesse caso pedimos a senha de root
+# do MySQL uma única vez, só para criar o banco e o usuário da aplicação;
+# ela NÃO é salva em lugar nenhum.
+MYSQL_ROOT_ARGS=()
+ERRO_CONEXAO="$(mysql -e "SELECT 1;" 2>&1 >/dev/null)"
+if [[ -n "$ERRO_CONEXAO" ]]; then
+	aviso "Conexão sem senha (auth_socket) falhou:"
+	echo "  $ERRO_CONEXAO"
+	if confirmar "Esse servidor exige senha de root do MySQL. Digitar a senha agora?"; then
+		read -r -s -p "Senha de root do MySQL: " MYSQL_ROOT_PASS
+		echo
+		MYSQL_ROOT_ARGS=(-u root -p"${MYSQL_ROOT_PASS}")
+		ERRO_CONEXAO="$(mysql "${MYSQL_ROOT_ARGS[@]}" -e "SELECT 1;" 2>&1 >/dev/null)"
+		if [[ -n "$ERRO_CONEXAO" ]]; then
+			echo "  $ERRO_CONEXAO"
+			falhar "Ainda não foi possível conectar ao MySQL com a senha informada."
+		fi
+	else
+		falhar "Não é possível continuar sem acesso de root ao MySQL."
+	fi
+fi
+
+mysql "${MYSQL_ROOT_ARGS[@]}" <<-SQL
 	CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 	CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED WITH caching_sha2_password BY '${DB_PASS}';
 	ALTER USER '${DB_USER}'@'localhost' IDENTIFIED WITH caching_sha2_password BY '${DB_PASS}';
