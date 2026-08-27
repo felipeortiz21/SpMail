@@ -68,8 +68,11 @@ if(isset($_REQUEST["url"])){
 			<h2>Agora, por favor, preencha as informações básicas para a operação do SpMail.</h2>
 			<form action="passo2.php" method="post">
 				<div>
-					<p class="mini-info">Preencha com a URL correta do site. Esse caminho é importante para definir onde os links, contadores e imagens irão referenciar.</p>
-					<input type="text" name="url" placeholder="https://meusite.com.br" value="https://<?php echo $_SERVER['HTTP_HOST']; ?>" autocomplete="off" required/>
+					<p class="mini-info">Preencha com a URL correta do site (sem barra no final) - inclusive o esquema certo, http:// ou https://. Esse caminho é importante para definir onde os links, contadores e imagens irão referenciar. Se estiver testando localmente sem certificado (ex: http://localhost:3002), use http://, não https://.</p>
+					<?php
+						$esquemaAtual = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+					?>
+					<input type="text" name="url" placeholder="https://meusite.com.br" value="<?php echo $esquemaAtual . $_SERVER['HTTP_HOST']; ?>" autocomplete="off" required/>
 				</div>
 				<div>
 					<p class="mini-info">Se o SpMail estiver instalado direto na raiz do domínio (sem subpasta - o mais comum), deixe este campo em branco. Preencha só se ele estiver dentro de uma subpasta, ex: "mailing" em https://meusite.com.br/mailing/</p>
