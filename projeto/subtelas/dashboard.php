@@ -138,8 +138,7 @@ if(isset($_REQUEST["mensagem"])){
 					$processoInterrompido = false;
 					if($mRow['status'] == 1){
 						$agora = date('d-m-Y H:i:s');
-						$segundos = calcularSegundosEntreEnvios($emailsHora);
-						$segundos = $segundos + ($segundos * ($envioVariacaoPercentual / 100)); // tolerância pro jitter
+						$segundos = $envioAtrasoMaximo; // maior atraso possível configurado
 
 						$proxAtualizacao = strtotime($mRow['data_atualizacao'] . ' +'. ($segundos).' second');
 						$proxAtualizacao = date('Y-m-d', $proxAtualizacao);

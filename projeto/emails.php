@@ -82,9 +82,8 @@
 					$processoInterrompido = false;
 					if($row['status'] == 1){
 						$agora = date('d-m-Y H:i:s');
-						$segundos = calcularSegundosEntreEnvios($emailsHora);
-						// Margem generosa: intervalo base + o teto do jitter configurado + 30s de folga
-						$margem = $segundos + ($segundos * ($envioVariacaoPercentual / 100)) + 30;
+						// Margem generosa: o maior atraso possível configurado + 30s de folga
+						$margem = $envioAtrasoMaximo + 30;
 
 						$proxAtualizacao = strtotime($row['data_atualizacao'] . ' +'. $margem.' second');
 						$proxAtualizacao = date('d-m-Y H:i:s', $proxAtualizacao);

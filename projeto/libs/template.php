@@ -38,37 +38,20 @@
 	}
 
 	/**
-	* Calcula o intervalo base (em segundos) entre um envio e outro, a partir
-	* do limite de emails por hora configurado. Nunca divide por zero: um
-	* valor <= 0 (ex: campo "emails por hora fora do horário comercial"
-	* deixado em branco, que vira 0) cai para um valor de segurança em vez de
-	* travar o PHP 8 com DivisionByZeroError.
+	* Sorteia o atraso (em segundos) antes do próximo envio, dentro da faixa
+	* configurada manualmente em Configurações - evita um intervalo
+	* perfeitamente constante entre envios (reconhecível como bot pelos
+	* provedores de email). Sempre retorna um valor sensato mesmo se os
+	* campos vierem zerados/invertidos (proteção contra configuração ruim).
 	*
-	* @param int $emailsPorHora
-	* @return float Segundos entre um envio e o próximo
+	* @param int $atrasoMinimo Segundos - menor atraso possível
+	* @param int $atrasoMaximo Segundos - maior atraso possível
+	* @return int Segundos a esperar antes do próximo envio, sempre >= 1
 	*/
-	function calcularSegundosEntreEnvios($emailsPorHora){
-		$taxa = (int) $emailsPorHora;
-		if($taxa <= 0){
-			$taxa = 60; // segurança - equivale a 1 email/minuto
-		}
-		return 3600 / $taxa;
-	}
-
-	/**
-	* Aplica uma variação aleatória (jitter) ao intervalo entre envios, pra
-	* evitar um padrão perfeitamente constante (reconhecível como bot pelos
-	* provedores de email). A média continua batendo com a taxa configurada,
-	* já que a variação é simétrica em torno do valor base.
-	*
-	* @param float $segundosBase
-	* @param int $variacaoPercentual Ex: 30 = varia entre 70% e 130% do valor base
-	* @return int Segundos a esperar, sempre >= 1
-	*/
-	function aplicarVariacaoAleatoria($segundosBase, $variacaoPercentual){
-		$variacao = max(0, (int) $variacaoPercentual) / 100;
-		$fatorAleatorio = 1 + (mt_rand(-100, 100) / 100) * $variacao;
-		return (int) max(1, round($segundosBase * $fatorAleatorio));
+	function segundosAleatoriosEntreEnvios($atrasoMinimo, $atrasoMaximo){
+		$min = max(1, (int) $atrasoMinimo);
+		$max = max($min, (int) $atrasoMaximo);
+		return mt_rand($min, $max);
 	}
 
 	/**

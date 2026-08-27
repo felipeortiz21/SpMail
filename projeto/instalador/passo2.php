@@ -29,7 +29,8 @@ if(isset($_REQUEST["url"])){
 	$cEmailsPorHoraNaoComercial = (int) $_REQUEST['emails_por_hora_nao_comercial'];
 	$cHorarioComercialIni = (int) $_REQUEST['horario_comercial_ini'];
 	$cHorarioComercialFin = (int) $_REQUEST['horario_comercial_fin'];
-	$cVariacao = (int) ($_REQUEST['envio_variacao_percentual'] ?? 30);
+	$cAtrasoMinimo = (int) ($_REQUEST['envio_atraso_minimo_segundos'] ?? 2);
+	$cAtrasoMaximo = (int) ($_REQUEST['envio_atraso_maximo_segundos'] ?? 5);
 
 	dbQuery($con, "TRUNCATE config;");
 
@@ -37,11 +38,11 @@ if(isset($_REQUEST["url"])){
 	// depois em Configurações, quando/se o domínio tiver uma chave DKIM pronta.
 	$rsSql = dbQuery(
 		$con,
-		"INSERT INTO config VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,'','','')",
-		"ssssssissiiiii",
+		"INSERT INTO config VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,'','','')",
+		"ssssssissiiiiii",
 		$cUrl, $cPasta, $cNomeEmpresa, $cSmtp, $cPorta, $cSeguranca, $cAutenticacao,
 		$cEmailResposta, $cNomeEmailResposta, $cEmailsPorHora, $cEmailsPorHoraNaoComercial,
-		$cHorarioComercialIni, $cHorarioComercialFin, $cVariacao
+		$cHorarioComercialIni, $cHorarioComercialFin, $cAtrasoMinimo, $cAtrasoMaximo
 	);
 
 	if($rsSql){
@@ -140,8 +141,9 @@ if(isset($_REQUEST["url"])){
 					<input type="number" name="horario_comercial_fin" placeholder="Apenas Números" autocomplete="off" value="18" min="0" max="23"/>
 				</div>
 				<div>
-					<p class="mini-info">Variação aleatória (%) no intervalo entre um email e outro, pra não ter um padrão perfeitamente constante (evita parecer comportamento de bot pra provedores como Gmail/Outlook). Pode ajustar depois em Configurações.</p>
-					<input type="number" name="envio_variacao_percentual" placeholder="Apenas Números" autocomplete="off" value="30" min="0" max="100"/>
+					<p class="mini-info">Atraso aleatório (em segundos) entre um email e outro, pra não ter um padrão perfeitamente constante (evita parecer comportamento de bot pra provedores como Gmail/Outlook). Pode ajustar depois em Configurações.</p>
+					<input type="number" name="envio_atraso_minimo_segundos" placeholder="Atraso Mínimo (segundos)" autocomplete="off" value="2" min="1"/>
+					<input type="number" name="envio_atraso_maximo_segundos" placeholder="Atraso Máximo (segundos)" autocomplete="off" value="5" min="1"/>
 				</div>
 				<button type="submit">Próximo Passo</button>
 			</form>

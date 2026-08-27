@@ -86,7 +86,7 @@ Um menu "Inserir Variável" acima do assunto e do editor insere o token na posi�
 
 O envio processa um contato por vez, respeitando o limite de "Emails por Hora" configurado, e se auto-agenda sozinho até terminar a campanha.
 
-- **Variação aleatória (jitter)**: em Configurações, o campo "Variação Aleatória (%)" faz o intervalo entre um email e outro variar em vez de ser sempre idêntico (ex: 30% faz o intervalo oscilar entre 70% e 130% do valor calculado) - evita um padrão perfeitamente constante, que provedores como Gmail/Outlook associam a comportamento de bot.
+- **Atraso aleatório (jitter)**: em Configurações, os campos "Atraso Mínimo/Máximo (segundos)" fazem cada envio esperar um tempo aleatório dentro dessa faixa antes do próximo (ex: 2 a 5 segundos) - evita um padrão perfeitamente constante, que provedores como Gmail/Outlook associam a comportamento de bot.
 - **DKIM (opcional)**: também em Configurações, é possível ativar a assinatura DKIM informando domínio, selector e a chave privada (formato PEM). Fica desligado por padrão - só ative se você já tiver a chave pública correspondente publicada no DNS do seu domínio.
 - **Watchdog de retomada (cron)**: o envio se auto-continua via uma chamada interna do próprio servidor; se esse elo falhar por qualquer motivo (rede, processo morto, servidor reiniciado no meio de uma campanha), ela fica parada em "Enviando" até alguém clicar em "Continuar Envios" no painel. O `install.sh` oferece configurar uma tarefa cron (a cada 2 minutos) que detecta e retoma essas campanhas sozinho - script em `projeto/cron/retomar_envios.php`. Para adicionar manualmente depois:
   ```

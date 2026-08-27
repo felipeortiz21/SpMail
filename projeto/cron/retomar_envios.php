@@ -36,18 +36,10 @@
 	require_once 'libs/template.php';
 
 	date_default_timezone_set('America/Sao_Paulo');
-	$dt = new DateTime();
-	if($horarioComercial_ini != ""){
-		$horaAtual = $dt->format('H');
-		if($horaAtual >= $horarioComercial_ini && $horaAtual <= $horarioComercial_fin){
-			$emailsHora = $emailsHoraNaoComercial;
-		}
-	}
 
 	// Mesma margem usada no painel (emails.php) pra decidir se uma campanha
-	// está "travada": intervalo base + o teto do jitter configurado + folga.
-	$segundosBase = calcularSegundosEntreEnvios($emailsHora);
-	$margemSegundos = (int) ($segundosBase + ($segundosBase * ($envioVariacaoPercentual / 100)) + 30);
+	// está "travada": o maior atraso possível configurado + folga.
+	$margemSegundos = $envioAtrasoMaximo + 30;
 
 	$rs = dbQuery($con, "SELECT id, data_atualizacao FROM mensagens WHERE status = '1'", "");
 

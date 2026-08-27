@@ -65,8 +65,8 @@
 		<body>';
 	$emailCompleto .= $mensagemPersonalizada;
 	$emailCompleto .= "<img src=\"".$caminhoURL."/contador.php?email=".urlencode($destinatario)."&mensagem=".$id."\" height=\"90\" style=\"height: 90px; width: auto; text-align: center; border: none;\" alt=\"contador\" />";
-	$emailCompleto .= "<center style='font-size:.8em;'>Caso você não consiga visualizar este email corretamente, <a href='$url' target='_blank'>clique aqui para acessar</a>.</center>";
-	$emailCompleto .= "<center style='font-size:.8em;'><a href='$urlCancelamento' target='_blank'>Cancelar Inscrição</a></center>";
+	// Removido a pedido: link de "visualizar no navegador" e "Cancelar
+	// Inscrição" - o email enviado passa a ter só o conteúdo criado na campanha.
 	$emailCompleto .= '</body></html>';
 
 	$urlAtivaSimples = "href='".$caminhoURL."link.php?email=".urlencode($destinatario)."&mensagem=$id&link=";

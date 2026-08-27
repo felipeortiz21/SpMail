@@ -32,7 +32,8 @@
 		$emailsHoraNaoComercial = 0;
 		$horarioComercial_ini = 0;
 		$horarioComercial_fin = 0;
-		$envioVariacaoPercentual = 30; // variação aleatória (%) aplicada ao intervalo entre emails
+		$envioAtrasoMinimo = 2; // segundos - atraso aleatório mínimo entre um envio e outro
+		$envioAtrasoMaximo = 5; // segundos - atraso aleatório máximo entre um envio e outro
 
 		$dkimAtivo = false;
 		$dkimDominio = "";
@@ -80,7 +81,8 @@
 			$horarioComercial_fin = $rConfig["horario_comercial_fin"];
 
 			// Campos novos (podem não existir ainda em bancos antigos até rodar o ALTER TABLE)
-			$envioVariacaoPercentual = (int) ($rConfig["envio_variacao_percentual"] ?? 30);
+			$envioAtrasoMinimo = (int) ($rConfig["envio_atraso_minimo_segundos"] ?? 2);
+			$envioAtrasoMaximo = (int) ($rConfig["envio_atraso_maximo_segundos"] ?? 5);
 			$dkimAtivo = !empty($rConfig["dkim_ativo"] ?? false);
 			$dkimDominio = $rConfig["dkim_dominio"] ?? "";
 			$dkimSelector = $rConfig["dkim_selector"] ?? "";

@@ -147,7 +147,7 @@
 			$arrEmail[$i] = ['email' => $row["email"], 'nome' => $row["nome"] ?? '', 'telefone' => $row["telefone"] ?? ''];
 			if(!$continuar){
 				if (!filter_var($arrEmail[$i]['email'], FILTER_VALIDATE_EMAIL) === false) {
-					dbQuery($con, "INSERT INTO restantes VALUES(DEFAULT,?,?,'0')", "is", $id, $arrEmail[$i]['email']);
+					dbQuery($con, "INSERT INTO restantes (mensagem, email, enviado) VALUES(?,?,'0')", "is", $id, $arrEmail[$i]['email']);
 				}
 			}
             $i++;
@@ -156,7 +156,7 @@
 		if(!$continuar){
 			for($i=0;$i<count($arrEmailsComp);$i++){
 				if (!filter_var($arrEmailsComp[$i], FILTER_VALIDATE_EMAIL) === false) {
-					dbQuery($con, "INSERT INTO restantes VALUES(DEFAULT,?,?,'0')", "is", $id, $arrEmailsComp[$i]);
+					dbQuery($con, "INSERT INTO restantes (mensagem, email, enviado) VALUES(?,?,'0')", "is", $id, $arrEmailsComp[$i]);
 				}
 			}
 		}
@@ -201,8 +201,10 @@
 					<body>';
 				$emailCompleto .= $mensagemPersonalizada;
         		$emailCompleto .= "<img src=\"".$caminhoURL."/contador.php?email=".urlencode($emailDestino)."&mensagem=".$id."\" height=\"90\" style=\"height: 90px; width: auto; text-align: center; border: none;\" />";
-				$emailCompleto .= "<center style='font-size:.8em;'>Caso você não consiga visualizar este email corretamente, <a href='$url' target='_blank'>clique aqui para acessar</a>.</center>";
-				$emailCompleto .= "<center style='font-size:.8em;'><a href='$urlCancelamento' target='_blank'>Cancelar Inscrição</a></center>";
+				// Removido a pedido: link de "visualizar no navegador" e "Cancelar
+				// Inscrição" - o email enviado passa a ter só o conteúdo criado na
+				// campanha. cancelamento.php continua existindo e acessível por URL
+				// direta, só não tem mais link automático dentro do email.
 				$emailCompleto .= '</body>';
 
 				$urlAtivaSimples = "href='".$caminhoURL."link.php?email=".urlencode($emailDestino)."&mensagem=$id&link=";
@@ -305,13 +307,12 @@
 
 	if(count($arrEmail) != 0){
 		$local = $caminhoURL."enviar.php?id=".$id."&acao=".$acao."&continuar=1&token=".tokenContinuacaoEnvio($id);
-		$segundos = calcularSegundosEntreEnvios($emailsHora);
 		if($continuar):?>
 			<h1>Envios Retomados</h1>
 		<?php
-			// Variação aleatória (jitter) em torno do intervalo configurado,
-			// pra não ter um padrão perfeitamente constante entre os envios.
-			sleep(aplicarVariacaoAleatoria($segundos, $envioVariacaoPercentual));
+			// Atraso aleatório (configurado em Configurações), pra não ter um
+			// padrão perfeitamente constante entre os envios.
+			sleep(segundosAleatoriosEntreEnvios($envioAtrasoMinimo, $envioAtrasoMaximo));
 		endif;
 		$local_escapado = escapeshellarg($local);
 		$exec = exec("curl --request GET $local_escapado > /dev/null 2>/dev/null &"); //Executar de forma de assínscrona e em background

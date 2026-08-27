@@ -29,7 +29,8 @@
 		$novosEmailsPorHoraNaoComercial = (int) $_REQUEST['emails_por_hora_nao_comercial'];
 		$novoHorarioIni = (int) $_REQUEST['horario_comercial_ini'];
 		$novoHorarioFin = (int) $_REQUEST['horario_comercial_fin'];
-		$novaVariacao = (int) $_REQUEST['envio_variacao_percentual'];
+		$novoAtrasoMinimo = (int) $_REQUEST['envio_atraso_minimo_segundos'];
+		$novoAtrasoMaximo = (int) $_REQUEST['envio_atraso_maximo_segundos'];
 		$novoDkimAtivo = isset($_REQUEST['dkim_ativo']) ? 1 : 0;
 		$novoDkimDominio = trim($_REQUEST['dkim_dominio'] ?? '');
 		$novoDkimSelector = trim($_REQUEST['dkim_selector'] ?? '');
@@ -38,12 +39,12 @@
 
 		$rsSql = dbQuery(
 			$con,
-			"UPDATE config SET url=?, pasta=?, nome_empresa=?, smtp=?, porta=?, seguranca=?, autenticacao=?, email_resposta=?, nome_email_resposta=?, emails_por_hora=?, emails_por_hora_nao_comercial=?, horario_comercial_ini=?, horario_comercial_fin=?, envio_variacao_percentual=?, dkim_ativo=?, dkim_dominio=?, dkim_selector=?, dkim_chave_privada=?",
-			"ssssssissiiiiiisss",
+			"UPDATE config SET url=?, pasta=?, nome_empresa=?, smtp=?, porta=?, seguranca=?, autenticacao=?, email_resposta=?, nome_email_resposta=?, emails_por_hora=?, emails_por_hora_nao_comercial=?, horario_comercial_ini=?, horario_comercial_fin=?, envio_atraso_minimo_segundos=?, envio_atraso_maximo_segundos=?, dkim_ativo=?, dkim_dominio=?, dkim_selector=?, dkim_chave_privada=?",
+			"ssssssissiiiiiiisss",
 			$novaUrl, $novaPasta, $novoNomeEmpresa, $novoSmtp, $novaPorta, $novaSeguranca,
 			$novaAutenticacao, $novoEmailResposta, $novoNomeEmailResposta,
 			$novosEmailsPorHora, $novosEmailsPorHoraNaoComercial, $novoHorarioIni, $novoHorarioFin,
-			$novaVariacao, $novoDkimAtivo, $novoDkimDominio, $novoDkimSelector, $novaDkimChaveCifrada
+			$novoAtrasoMinimo, $novoAtrasoMaximo, $novoDkimAtivo, $novoDkimDominio, $novoDkimSelector, $novaDkimChaveCifrada
 		);
 		$msg = "Dados de Configuração foram Atualizados com Sucesso. Por favor, aguarde que até que a página seja recarregada automaticamente.";
 		echo "<meta http-equiv='refresh' content='5'>";
@@ -68,7 +69,8 @@
 		$cEmailsPorHoraNaoComercial = $row["emails_por_hora_nao_comercial"];
 		$cHorarioComercialIni = $row["horario_comercial_ini"];
 		$cHorarioComercialFin = $row["horario_comercial_fin"];
-		$cVariacao = $row["envio_variacao_percentual"] ?? 30;
+		$cAtrasoMinimo = $row["envio_atraso_minimo_segundos"] ?? 2;
+		$cAtrasoMaximo = $row["envio_atraso_maximo_segundos"] ?? 5;
 		$cDkimAtivo = !empty($row["dkim_ativo"] ?? false);
 		$cDkimDominio = $row["dkim_dominio"] ?? "";
 		$cDkimSelector = $row["dkim_selector"] ?? "";
@@ -104,8 +106,9 @@
 				<input type="number" name="horario_comercial_fin"  id="horario_comercial_fin" placeholder="Fim do Horário Comercial (Brasília)" required="true" value="<?php echo (int) $cHorarioComercialFin;?>"  min="0" max="23"/>
 
 				<h4>Anti-spam</h4>
-				<p class="mini-info">Variação aleatória (%) aplicada ao intervalo entre um email e outro, pra evitar um padrão perfeitamente constante entre os envios (reconhecido como comportamento de bot por provedores como Gmail/Outlook). Ex: 30 = cada envio varia entre 70% e 130% do intervalo calculado a partir de "Emails por Hora".</p>
-				<input type="number" name="envio_variacao_percentual" id="envio_variacao_percentual" placeholder="Variação Aleatória (%)" value="<?php echo (int) $cVariacao;?>" min="0" max="100"/>
+				<p class="mini-info">Atraso aleatório (em segundos) entre um email e outro, pra evitar um padrão perfeitamente constante entre os envios (reconhecido como comportamento de bot por provedores como Gmail/Outlook). Ex: 2 a 5 = cada envio espera um tempo aleatório entre 2 e 5 segundos antes do próximo.</p>
+				<input type="number" name="envio_atraso_minimo_segundos" id="envio_atraso_minimo_segundos" placeholder="Atraso Mínimo (segundos)" value="<?php echo (int) $cAtrasoMinimo;?>" min="1"/>
+				<input type="number" name="envio_atraso_maximo_segundos" id="envio_atraso_maximo_segundos" placeholder="Atraso Máximo (segundos)" value="<?php echo (int) $cAtrasoMaximo;?>" min="1"/>
 
 				<h4>DKIM (opcional)</h4>
 				<p class="mini-info">Assina os emails enviados com DKIM, aumentando a chance de não cair em spam. Totalmente opcional - deixe desativado se não tiver uma chave DKIM configurada no DNS do seu domínio.</p>
