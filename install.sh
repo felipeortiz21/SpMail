@@ -101,6 +101,41 @@ else
 fi
 
 # --------------------------------------------------------------------------
+# curl (binário de linha de comando - diferente da extensão php-curl!)
+# --------------------------------------------------------------------------
+passo "Verificando curl"
+
+# enviar.php dispara sozinho a continuação do envio em lote via
+# `exec("curl ...")` chamando o binário de linha de comando - a extensão
+# php-curl (usada por código PHP via curl_init()) não é o mesmo pacote e não
+# cobre isso. Sem o binário, o envio para de continuar sozinho após o
+# primeiro email, silenciosamente.
+if ! command -v curl >/dev/null 2>&1; then
+	if confirmar "Binário curl não encontrado (necessário para o envio em lote continuar sozinho). Instalar agora?"; then
+		apt-get update -y
+		apt-get install -y curl
+		ok "curl instalado."
+	else
+		aviso "Sem o curl, cada campanha vai parar depois do primeiro email e vai exigir clicar em 'Continuar Envios' manualmente."
+	fi
+else
+	ok "curl encontrado: $(curl --version | head -n1)"
+fi
+
+# exec() as vezes vem desabilitado em php.ini por padrao de hospedagem -
+# sem ele, a mesma continuacao automatica tambem para de funcionar. O CLI e
+# o PHP-FPM costumam ter php.ini SEPARADOS no Ubuntu, entao checa os dois.
+if ! php -r 'exit(function_exists("exec") ? 0 : 1);' 2>/dev/null; then
+	aviso "A função exec() está desabilitada no PHP CLI (disable_functions)."
+fi
+FPM_INI=$(find /etc/php -path "*/fpm/php.ini" 2>/dev/null | head -n1)
+if [[ -n "$FPM_INI" ]] && grep -qi "^disable_functions\s*=.*\bexec\b" "$FPM_INI"; then
+	aviso "exec está em disable_functions no php.ini do PHP-FPM (${FPM_INI}) - o envio em lote não vai conseguir continuar sozinho. Remova 'exec' dessa lista e reinicie o php-fpm."
+else
+	ok "exec() não parece estar bloqueado no PHP-FPM."
+fi
+
+# --------------------------------------------------------------------------
 # MySQL / MariaDB
 # --------------------------------------------------------------------------
 passo "Verificando MySQL/MariaDB"
@@ -123,13 +158,29 @@ fi
 # --------------------------------------------------------------------------
 passo "Configurando banco de dados"
 
-read -r -p "Nome do banco de dados [spmail]: " DB_NAME
-DB_NAME="${DB_NAME:-spmail}"
+ENV_FILE="${APP_DIR}/.env"
+REAPROVEITAR_ENV=false
 
-read -r -p "Usuário de banco DEDICADO para a aplicação [spmail_app]: " DB_USER
-DB_USER="${DB_USER:-spmail_app}"
+if [[ -f "$ENV_FILE" ]]; then
+	aviso ".env já existe em ${ENV_FILE} (essa VM já foi configurada antes)."
+	if confirmar "Reaproveitar as credenciais de banco já salvas nesse .env? (recomendado - evita trocar a senha do usuário já em uso e quebrar a conexão)"; then
+		DB_NAME="$(grep -m1 '^DB_NAME=' "$ENV_FILE" | cut -d'=' -f2-)"
+		DB_USER="$(grep -m1 '^DB_USER=' "$ENV_FILE" | cut -d'=' -f2-)"
+		DB_PASS="$(grep -m1 '^DB_PASS=' "$ENV_FILE" | cut -d'=' -f2-)"
+		REAPROVEITAR_ENV=true
+		ok "Reaproveitando banco '${DB_NAME}' e usuário '${DB_USER}' do .env existente."
+	fi
+fi
 
-DB_PASS="$(openssl rand -base64 24 | tr -d '=+/')"
+if [[ "$REAPROVEITAR_ENV" != "true" ]]; then
+	read -r -p "Nome do banco de dados [spmail]: " DB_NAME
+	DB_NAME="${DB_NAME:-spmail}"
+
+	read -r -p "Usuário de banco DEDICADO para a aplicação [spmail_app]: " DB_USER
+	DB_USER="${DB_USER:-spmail_app}"
+
+	DB_PASS="$(openssl rand -base64 24 | tr -d '=+/')"
+fi
 
 # Serviço do MySQL precisa estar de pé antes de tentar conectar
 if command -v systemctl >/dev/null 2>&1 && ! systemctl is-active --quiet mysql 2>/dev/null && ! systemctl is-active --quiet mariadb 2>/dev/null; then
@@ -171,13 +222,25 @@ if [[ $CODIGO_CONEXAO -ne 0 ]]; then
 	fi
 fi
 
-mysql "${MYSQL_ROOT_ARGS[@]}" <<-SQL
-	CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-	CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED WITH caching_sha2_password BY '${DB_PASS}';
-	ALTER USER '${DB_USER}'@'localhost' IDENTIFIED WITH caching_sha2_password BY '${DB_PASS}';
-	GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';
-	FLUSH PRIVILEGES;
-SQL
+if [[ "$REAPROVEITAR_ENV" == "true" ]]; then
+	# So garante que o banco/usuario existem e as permissoes estao certas -
+	# NAO mexe na senha (CREATE USER IF NOT EXISTS nao faz nada se o usuario
+	# ja existir, e nao ha ALTER USER aqui).
+	mysql "${MYSQL_ROOT_ARGS[@]}" <<-SQL
+		CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+		CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED WITH caching_sha2_password BY '${DB_PASS}';
+		GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';
+		FLUSH PRIVILEGES;
+	SQL
+else
+	mysql "${MYSQL_ROOT_ARGS[@]}" <<-SQL
+		CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+		CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED WITH caching_sha2_password BY '${DB_PASS}';
+		ALTER USER '${DB_USER}'@'localhost' IDENTIFIED WITH caching_sha2_password BY '${DB_PASS}';
+		GRANT ALL PRIVILEGES ON \`${DB_NAME}\`.* TO '${DB_USER}'@'localhost';
+		FLUSH PRIVILEGES;
+	SQL
+fi
 
 ok "Banco '${DB_NAME}' e usuário dedicado '${DB_USER}'@'localhost' prontos (sem uso de root na aplicação)."
 
@@ -186,13 +249,10 @@ ok "Banco '${DB_NAME}' e usuário dedicado '${DB_USER}'@'localhost' prontos (sem
 # --------------------------------------------------------------------------
 passo "Gerando .env"
 
-ENV_FILE="${APP_DIR}/.env"
-APP_KEY="$(openssl rand -base64 32)"
-
-if [[ -f "$ENV_FILE" ]]; then
-	aviso ".env já existe em ${ENV_FILE} - não será sobrescrito."
-	aviso "Se quiser gerar um novo, apague o arquivo antigo e rode este script de novo."
+if [[ "$REAPROVEITAR_ENV" == "true" ]]; then
+	ok ".env mantido como estava (credenciais reaproveitadas)."
 else
+	APP_KEY="$(openssl rand -base64 32)"
 	cat > "$ENV_FILE" <<-ENV
 		DB_HOST=localhost
 		DB_USER=${DB_USER}
