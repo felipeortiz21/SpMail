@@ -90,6 +90,7 @@
 		$mail = new PHPMailer(true);
 
 		try {
+			$mail->IsSMTP(); // sem isso, o PHPMailer ignora as configurações de SMTP e tenta a função mail() nativa do PHP
 			$mail->CharSet = $charset;
 			$mail->Host = $smtp;
 			$mail->SMTPDebug = 0;
