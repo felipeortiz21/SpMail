@@ -544,23 +544,28 @@ div.confirma .enviarEmail .area_mensagem,.resumo{
 	height: auto;
 }
 
-/* Variáveis dinâmicas ({nome}/{email}/{telefone}) no compositor */
+/* Variáveis dinâmicas ({nome}/{email}/{telefone}) no compositor.
+   Label em cima e select embaixo (empilhado) em vez de lado a lado -
+   com os dois na mesma linha, o texto do label ("Inserir variável no
+   assunto:") não tinha como quebrar (white-space:nowrap) e brigava
+   por espaço com o select dentro do card estreito, estourando pra
+   fora. Empilhado, cada um usa a largura toda e não estoura mais. */
 .variaveis{
 	display: flex;
-	align-items: center;
-	gap: .5em;
+	flex-direction: column;
+	align-items: stretch;
+	gap: .3em;
 	margin-bottom: .8em;
 }
 
 .variaveis label{
 	font-size: .82em;
 	color: var(--pico-muted-color);
-	white-space: nowrap;
 	margin: 0;
 }
 
 .variaveis select{
-	width: auto;
+	width: 100%;
 	margin-bottom: 0;
 	font-size: .85em;
 }
