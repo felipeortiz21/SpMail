@@ -310,7 +310,17 @@
 	include "footer.php";
 
 	if(count($arrEmail) != 0){
-		$local = $caminhoURL."enviar.php?id=".$id."&acao=".$acao."&continuar=1&token=".tokenContinuacaoEnvio($id);
+		// A auto-continuação chama o próprio servidor - usa a porta REAL que o
+		// Nginx escuta internamente (SERVER_PORT), não a URL pública configurada
+		// em Configurações. Em VMs com port-forward (VirtualBox NAT, Docker,
+		// etc), a porta externa (ex: 3002) só existe "de fora pra dentro" - um
+		// processo rodando dentro da própria máquina (como este curl) não a
+		// enxerga, e "localhost:<porta externa>" dá Connection Refused.
+		$portaInterna = $_SERVER['SERVER_PORT'] ?? '80';
+		$baseInterna = "http://127.0.0.1:{$portaInterna}/";
+		$pastaLimpaInterna = trim($pastaURL, '/');
+		$baseInterna .= $pastaLimpaInterna !== '' ? $pastaLimpaInterna . '/' : '';
+		$local = $baseInterna."enviar.php?id=".$id."&acao=".$acao."&continuar=1&token=".tokenContinuacaoEnvio($id);
 		if($continuar):?>
 			<h1>Envios Retomados</h1>
 		<?php

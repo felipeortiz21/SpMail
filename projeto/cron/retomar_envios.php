@@ -41,6 +41,20 @@
 	// está "travada": o maior atraso possível configurado + folga.
 	$margemSegundos = $envioAtrasoMaximo + 30;
 
+	// A chamada de retomada é interna (o próprio servidor chamando a si
+	// mesmo) - não pode depender da URL pública quando há port-forward
+	// externo (VirtualBox NAT, Docker, etc), já que a porta externa só
+	// existe "de fora pra dentro". Configurável via PORTA_INTERNA no .env;
+	// se não definida, tenta a porta da própria URL pública (funciona
+	// quando NÃO há port-forward).
+	$portaInterna = envVar('PORTA_INTERNA', '');
+	if($portaInterna === ''){
+		$portaInterna = parse_url($caminhoURL, PHP_URL_PORT) ?: '80';
+	}
+	$baseInterna = "http://127.0.0.1:{$portaInterna}/";
+	$pastaLimpaInterna = trim($pastaURL, '/');
+	$baseInterna .= $pastaLimpaInterna !== '' ? $pastaLimpaInterna . '/' : '';
+
 	$rs = dbQuery($con, "SELECT id, data_atualizacao FROM mensagens WHERE status = '1'", "");
 
 	$retomadas = 0;
@@ -57,7 +71,7 @@
 			// do cron tentarem retomar a mesma mensagem ao mesmo tempo.
 			dbQuery($con, "UPDATE mensagens SET data_atualizacao = ? WHERE id = ? AND status = '1'", "si", date('Y-m-d H:i:s'), $id);
 
-			$local = $caminhoURL . "enviar.php?id={$id}&acao=1&continuar=1&token=" . tokenContinuacaoEnvio($id);
+			$local = $baseInterna . "enviar.php?id={$id}&acao=1&continuar=1&token=" . tokenContinuacaoEnvio($id);
 			$local_escapado = escapeshellarg($local);
 			exec("setsid nohup curl --request GET {$local_escapado} > /dev/null 2>&1 &");
 
