@@ -1,13 +1,14 @@
 <?php
 	/*****************************
-		PortilloMail
-		Projeto Iniciado por Rodrigo Portillo em 2015
-		Projeto colocado sob Licença Mozilla
-		@author Rodrigo Portillo
-		@url https://velhobit.com.br
+		SpMail
+		Mantido por Spiral Soluções e Consultoria LTDA
+		Baseado no projeto PortilloMail, iniciado por Rodrigo Portillo em 2015
+		Distribuído sob Licença Mozilla Public License 2.0
+		Contato: contato@spiralsolucoes.com
 	******************************/
 	include "header.php";
 	include "libs/seguranca.php";        //Conexão com o banco de dados.
+	include "libs/db.php";
 	include "functions.php";
 	protegePagina();
 ?>
@@ -15,33 +16,33 @@
 	//MANIPULAR ITENS
 	$existe = 	isset($_REQUEST["titulo"]) &&
 				isset($_REQUEST['descricao']);
+	$rsSql = false;
+	$msg = "";
 
 	if($existe){
+		$titulo = $_REQUEST['titulo'];
+		$descricao = $_REQUEST['descricao'];
+
 		if($_REQUEST['acao'] == '2'){
-			$sql = "UPDATE grupos SET titulo='".$_REQUEST['titulo']."',descricao='".$_REQUEST['descricao']."' WHERE id='".$_REQUEST['id']."';";
-			$msg = "Grupo ".$_REQUEST['titulo']." Atualizado com Sucesso";
+			$rsSql = dbQuery($con, "UPDATE grupos SET titulo=?, descricao=? WHERE id=?", "ssi", $titulo, $descricao, (int) $_REQUEST['id']);
+			$msg = "Grupo ".htmlspecialchars($titulo)." Atualizado com Sucesso";
 		}else if($_REQUEST['acao'] == '3'){
-			$sql = "DELETE FROM grupos WHERE id='".$_REQUEST['id']."';";
-			$msg = "Grupo ".$_REQUEST['titulo']." foi excluído";
+			$rsSql = dbQuery($con, "DELETE FROM grupos WHERE id=?", "i", (int) $_REQUEST['id']);
+			$msg = "Grupo ".htmlspecialchars($titulo)." foi excluído";
 		}
 		else if($_REQUEST['acao'] == '1'){
-			$sql = "INSERT INTO grupos VALUES(DEFAULT,'".$_REQUEST['titulo']."','".$_REQUEST['descricao']."')";
-			$msg = "Grupo ".$_REQUEST['titulo']." foi inserido";
+			$rsSql = dbQuery($con, "INSERT INTO grupos VALUES(DEFAULT,?,?)", "ss", $titulo, $descricao);
+			$msg = "Grupo ".htmlspecialchars($titulo)." foi inserido";
 		}
-		
-		$rsSql = mysqli_query($con,$sql);
 	}
 ?>
 <?php
 	//SELECIONAR ITENS PARA PREENCHER A GRID
-	$strSQL = "SELECT * FROM grupos ORDER BY titulo";   //Variável que armazena strings para extrair os dados da tabela.
-	$rs = mysqli_query($con,$strSQL);        //$rs = returnset. Retorno dos dados da tabela.
+	$rs = dbQuery($con, "SELECT * FROM grupos ORDER BY titulo");
 ?>
 <?php
 	if($rsSql && isset($_REQUEST["id"])){
 		echo "<div class='alert wrap'>$msg</div>";
-	}else{
-		//echo "<h2>Erro ao Atualizar o Cadastro de Grupos</h2><h3>".mysqli_error($con)."</h3>";
 	}
 ?>
 <div class="wrap grupos">
@@ -75,9 +76,9 @@
 						while($row = mysqli_fetch_array($rs)):
 					?>
 					<tr>
-						<td rel="id"><?php echo $row['id']?></td>
-						<td rel="titulo"><?php echo $row['titulo']?></td>
-						<td rel="descricao"><?php echo $row['descricao']?></td>
+						<td rel="id"><?php echo (int) $row['id']?></td>
+						<td rel="titulo"><?php echo htmlspecialchars($row['titulo'])?></td>
+						<td rel="descricao"><?php echo htmlspecialchars($row['descricao'])?></td>
 						<td>
 							<img onclick="editar(event)" src="<?php echo $caminhoURL; ?>assets/editar.png" title="Editar Grupo">
 							<img onclick="excluir(event)" src="<?php echo $caminhoURL; ?>assets/delete.png" title="Excluir Grupo">
@@ -90,28 +91,21 @@
 			</table>
 		</div>
     </div>
-	<h3>
-		<?php 
-			if(isset($_REQUEST[$titulo])){
-				$titulo = "";
-			}
-		?>
-	</h3>
 </div>
 <script>
 	function limpar(){
 		$("#acao").val("1");
 	}
-	
+
 	function editar(event){
 		relacionar();
 		$("#acao").val("2"); // Ação 2 = Editar
 	}
-	
+
 	function excluir(event){
 		var titulo = $(event.target).parent().parent().find("td[rel='titulo']").html();
 		var r = confirm("Tem certeza que deseja excluir o grupo "+titulo+"?");
-		
+
 		if (r == true) {
 			relacionar();
 		    $("#acao").val("3"); // Ação 3 = Excluir
@@ -120,7 +114,7 @@
 		   //NADA
 		}
 	}
-	
+
 	function relacionar(){
 		var pai = $(event.target).parent().parent();
 		//relacionar
@@ -130,13 +124,13 @@
 			$("form#formulario").find("#"+campo).val($(this).html());
 		});
 	}
-	
+
 	function visualizar(event){
 		var pai = $(event.target).parent().parent();
-		
-		
+
+
 	}
-	
+
 	$(".ajax").colorbox({width:"80%", height:"70%",className:"caixaBranca"});
 </script>
 

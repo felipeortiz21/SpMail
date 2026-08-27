@@ -1,14 +1,20 @@
 <?php
-	//include "header.php";
-	include "../libs/conexao.php";        //Conexão com o banco de dados.
+	/*****************************
+		SpMail
+		Mantido por Spiral Soluções e Consultoria LTDA
+		Baseado no projeto PortilloMail, iniciado por Rodrigo Portillo em 2015
+		Distribuído sob Licença Mozilla Public License 2.0
+		Contato: contato@spiralsolucoes.com
+	******************************/
+	include "../libs/seguranca.php";
+	include "../libs/db.php";
 	include "../functions.php";
-	
-	$id = $_REQUEST["mensagem"];
+	protegePagina();
+
+	$id = (int) $_REQUEST["mensagem"];
 ?>
 <?php
-	//SELECIONAR ITENS PARA PREENCHER A GRID
-	$strSQL = "SELECT * FROM cliques WHERE mensagem = '$id'";   //Variável que armazena strings para extrair os dados da tabela.
-	$rs = mysqli_query($con,$strSQL);        //$rs = returnset. Retorno dos dados da tabela.
+	$rs = dbQuery($con, "SELECT * FROM cliques WHERE mensagem = ?", "i", $id);
 ?>
 	<table>
 		<caption>Contatos que Clicaram em Algum Link do Email</caption>
@@ -23,9 +29,9 @@
 				while($row = mysqli_fetch_array($rs)):
 			?>
 			<tr>
-				<td rel="id"><?php echo $row['id']?></td>
-				<td rel="email"><?php echo $row['contato']?></td>
-				<td rel="link"><?php echo $row['link']?></td>
+				<td rel="id"><?php echo (int) $row['id']?></td>
+				<td rel="email"><?php echo htmlspecialchars($row['contato'])?></td>
+				<td rel="link"><?php echo htmlspecialchars($row['link'])?></td>
 				<td rel="horario"><?php echo date('d/m/Y H:i',strtotime($row['data_hora']))?></td>
 			</tr>
 			<?php
@@ -33,10 +39,3 @@
 			?>
 		</tbody>
 	</table>
-	<h3>
-		<?php 
-			if(isset($_REQUEST[$titulo])){
-				$titulo = "";
-			}
-		?>
-	</h3>

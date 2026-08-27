@@ -1,11 +1,11 @@
 <?php
 	
 	/*****************************
-		PortilloMail
-		Projeto Iniciado por Rodrigo Portillo em 2015
-		Projeto colocado sob Licença Mozilla
-		@author Rodrigo Portillo
-		@url https://velhobit.com.br
+		SpMail
+		Mantido por Spiral Soluções e Consultoria LTDA
+		Baseado no projeto PortilloMail, iniciado por Rodrigo Portillo em 2015
+		Distribuído sob Licença Mozilla Public License 2.0
+		Contato: contato@spiralsolucoes.com
 	******************************/
 	
 	

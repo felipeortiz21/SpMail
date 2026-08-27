@@ -1,12 +1,15 @@
 <?php
 
 		/*****************************
-			PortilloMail
-			Projeto Iniciado por Rodrigo Portillo em 2015
-			Projeto colocado sob Licença Mozilla
-			@author Rodrigo Portillo
-			@url https://velhobit.com.br
+			SpMail
+			Mantido por Spiral Soluções e Consultoria LTDA
+			Baseado no projeto PortilloMail, iniciado por Rodrigo Portillo em 2015
+			Distribuído sob Licença Mozilla Public License 2.0
+			Contato: contato@spiralsolucoes.com
 		******************************/
+
+		include_once(__DIR__ . "/env.php");
+		carregarEnv(__DIR__ . "/../.env");
 
 		//Dados globais para configuração do sistema de emails.
 		$currentURL = "";
@@ -25,28 +28,29 @@
 		$emailResposta = "";
 		$nomeEmailResposta = "";
 
-		$emailsHora = 0; //Valor aproximado, pois o resultado final vai ser convertido 
+		$emailsHora = 0; //Valor aproximado, pois o resultado final vai ser convertido
 		$emailsHoraNaoComercial = 0;
 		$horarioComercial_ini = 0;
 		$horarioComercial_fin = 0;
 
-		$host	= "localhost"; // IP do Banco
-		$user 	= ""; // Usuário
-		$pswd 	= ""; // Senha
-		$dbname	= ""; // Banco
+		// Credenciais do banco - vêm do .env (gerado pelo instalador). Os valores
+		// abaixo só são usados como fallback se o .env ainda não existir.
+		$host	= envVar("DB_HOST", "localhost"); // IP do Banco
+		$user 	= envVar("DB_USER", ""); // Usuário
+		$pswd 	= envVar("DB_PASS", ""); // Senha
+		$dbname	= envVar("DB_NAME", ""); // Banco
 		$con 	= null; // Conexão
 
 
 		$con = mysqli_connect($host, $user, $pswd);
 		if (!$con) {
-			die("Não foi possível conectar: " . mysqli_error());
+			die("Não foi possível conectar: " . mysqli_connect_error());
 		}
 		mysqli_select_db($con, $dbname);
-		mysqli_set_charset($con, "utf-8"); //Corrigir UTF8
+		mysqli_set_charset($con, "utf8mb4");
 
 		//Preencher Configurações Globais
-		$SQLConfig = "SELECT * from config;";   //Variável que armazena strings para extrair os dados da tabela.
-		$rsConfig = mysqli_query($con,$SQLConfig);        //$rs = returnset. Retorno
+		$rsConfig = mysqli_query($con, "SELECT * FROM config LIMIT 1");
 		while($rConfig = mysqli_fetch_array($rsConfig)){
 			//Dados globais para configuração do sistema de emails.
 			$currentURL = $rConfig["url"];
@@ -63,7 +67,7 @@
 			$emailResposta = $rConfig["email_resposta"];
 			$nomeEmailResposta = $rConfig["nome_email_resposta"];
 
-			$emailsHora = $rConfig["emails_por_hora"]; //Valor aproximado, pois o resultado final vai ser convertido 
+			$emailsHora = $rConfig["emails_por_hora"]; //Valor aproximado, pois o resultado final vai ser convertido
 			$emailsHoraNaoComercial = $rConfig["emails_por_hora_nao_comercial"];
 			$horarioComercial_ini = $rConfig["horario_comercial_ini"];
 			$horarioComercial_fin = $rConfig["horario_comercial_fin"];

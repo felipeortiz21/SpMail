@@ -1,18 +1,42 @@
 <?php
 	/*****************************
-		PortilloMail
-		Projeto Iniciado por Rodrigo Portillo em 2015
-		Projeto colocado sob Licença Mozilla
-		@author Rodrigo Portillo
-		@url https://velhobit.com.br
+		SpMail
+		Mantido por Spiral Soluções e Consultoria LTDA
+		Baseado no projeto PortilloMail, iniciado por Rodrigo Portillo em 2015
+		Distribuído sob Licença Mozilla Public License 2.0
+		Contato: contato@spiralsolucoes.com
 	******************************/
+
+	// Este arquivo é chamado tanto por um clique do usuário logado (o navegador,
+	// com sessão ativa) quanto pelo próprio servidor, em segundo plano, via curl,
+	// para continuar um envio em lotes - essa segunda chamada NÃO tem sessão.
+	// Por isso a autenticação aqui aceita OU uma sessão válida, OU um token
+	// assinado (gerado com a APP_KEY) específico para a mensagem em questão.
+	include_once("libs/config.php");
+	include_once("libs/seguranca.php");
+	include_once("libs/db.php");
+	include_once("libs/template.php");
+
+	function tokenContinuacaoEnvio($idMensagem){
+		$chave = obterChaveApp();
+		return hash_hmac('sha256', 'continuar-envio:' . $idMensagem, $chave ?? 'sem-app-key-configurada');
+	}
+
+	$tokenRecebido = $_REQUEST['token'] ?? '';
+	$tokenValido = isset($_REQUEST['id']) && hash_equals(tokenContinuacaoEnvio($_REQUEST['id']), $tokenRecebido);
+
+	// Deixa o header.php saber que essa requisição pode não ter sessão de
+	// navegador (chamada interna de continuação) sem quebrar o layout normal
+	// quando é o usuário mesmo clicando em "Enviar".
+	$GLOBALS['permitirSemSessao'] = $tokenValido;
 	include "header.php";
+
+	if(!$tokenValido){
+		protegePagina();
+	}
+
 	ini_set('error_reporting', E_ALL);     //Reporta todos os erros.
 	date_default_timezone_set('America/Sao_Paulo');
-	/*session_start();
-	if($_SESSION["usuario"] != "naja"){
-		header("location:index.php");
-	}*/
 	$id = $_REQUEST["id"];
 	$acao = $_REQUEST["acao"];
 
@@ -29,19 +53,18 @@
 
     $imediato = false;
 
-	$assunto;
-	$email_envio;
-	$emails_adicionais;
-	$grupo;
-	$mensagem;
-	$status;
-	$data_envio;
-	$data_atualizacao;
-	$obs;
+	$assunto = "";
+	$email_envio = "";
+	$emails_adicionais = "";
+	$grupo = "";
+	$mensagem = "";
+	$status = "";
+	$data_envio = "";
+	$data_atualizacao = "";
+	$obs = "";
 	$email = "";
 	$enviados = "";
 	$emailsRestantes = "";
-	include "libs/conexao.php";        //Conexão com o banco de dados.
 
 	if(isset($_REQUEST["imediato"])){
 		$imediato = true;
@@ -52,29 +75,38 @@
 		$continuar = true;
 	}else{
 	    //Registrar o Início do Envio
-		$sql = "UPDATE mensagens SET data_envio_ini='".$horarioEnvio."', status='1' WHERE id='$id';";
-	    $rs = mysqli_query($con,$sql);
+		dbQuery($con, "UPDATE mensagens SET data_envio_ini=?, status='1' WHERE id=?", "si", $horarioEnvio, $id);
 	}
 
 	$EmailsEnviados = array();
 	$EmailsFaltantes = array();
 	$arrEmailsComp = array();
 	$arrEmail = array();
-//die();
+
+	// Busca nome/telefone de um contato pelo email (usado para as emails
+	// adicionais digitados manualmente, que não têm um registro de origem)
+	function buscarContatoPorEmail($con, $email){
+		$rs = dbQuery($con, "SELECT nome, telefone FROM contatos WHERE email = ? LIMIT 1", "s", $email);
+		$row = $rs ? mysqli_fetch_assoc($rs) : null;
+		return $row ?: ['nome' => '', 'telefone' => ''];
+	}
 ?>
 
 <?php
 	if($acao==1):
 
-		//--INICIO DA EXPLICAÇÃO
-		// SELECIONE
-		// os campos (men.id, men.assunto, men.etc...), onde men é a referência da tabela, ou seja, eu quero esses itens DESSA tabela men
-		// A PARTIR DA TABELA mensagens men (men é a referência)
-		// ONDE o campo id for igual ao id que estou passando no PHP
-		$sql = "SELECT men.id as id,men.assunto as assunto,men.mensagem as mensagem,men.url as url,(SELECT email FROM usuarios WHERE id=men.email_envio) as email_envio,(SELECT nome FROM usuarios WHERE id=men.email_envio) as nome_envio,(SELECT nome FROM usuarios WHERE id=men.email_envio) as nome,(SELECT senha_email FROM usuarios WHERE id=men.email_envio) as senha_email, grupos, emails_adicionais FROM mensagens men WHERE id='$id'";
-		//Como eu não lembrava o nome do campo, fui lá no PHPMYADMIN e olhei qual era o nome do campo dos emails complementares, no caso é o campo emails_complementares, então adicionei no final do select, antes do FROM
-
-        $rs = mysqli_query($con,$sql);
+		$rs = dbQuery(
+			$con,
+			"SELECT men.id as id, men.assunto as assunto, men.mensagem as mensagem, men.url as url,
+				(SELECT email FROM usuarios WHERE id=men.email_envio) as email_envio,
+				(SELECT nome FROM usuarios WHERE id=men.email_envio) as nome_envio,
+				(SELECT nome FROM usuarios WHERE id=men.email_envio) as nome,
+				(SELECT senha_email FROM usuarios WHERE id=men.email_envio) as senha_email,
+				grupos, emails_adicionais
+			FROM mensagens men WHERE id=?",
+			"i",
+			$id
+		);
         while($row = mysqli_fetch_array($rs)){
             $id = $row["id"];
 			$assunto = $row["assunto"];
@@ -83,47 +115,42 @@
 			$nome = $row["nome"];
 			$mensagem = $row["mensagem"];
 			$url = $row["url"];
-			$senha_email = $row["senha_email"];
+			$senha_email = descriptografarSenhaEmail($row["senha_email"]);
 			$grupo = $row["grupos"];
-			// Aqui eu coloco os emails complementares em uma variável
-            $emailsComp = $row["emails_adicionais"]; // O nome é igual ao do campo, poruq eue usei o msqli_ FETCH ARRAY (ou seja, transforma em uma array associativo)
+            $emailsComp = $row["emails_adicionais"];
         }
 
-        //PORÉM, o $emailsComp retorna uma STRING, logo, eu preciso separar essa String
-        // Os emails complementares chegam da seguinte forma: email@dominio.com, outroemail@dominio.com, maisumemail@dominio.com, só que em linha única, então temos que dividir em um vetor, e vamos usar o vírgula como divisor
         if(trim($emailsComp) != "" ){
-        	$arrEmailsComp = explode(",", $emailsComp); //Explodo (em algumas linguagens é split) a string de emails e a transformo em vetor, usando o vírgula como divisão
+        	$arrEmailsComp = explode(",", $emailsComp);
         }
 
         //Caso o email já tenha sido enviado anterioremente, continue os emails pela tabela restante
         if($continuar){
-	        $strSQL = "SELECT email FROM restantes WHERE mensagem='".$id."' AND enviado='0' GROUP BY email LIMIT 10;";//Query da Tabela Restantes //Enviado 0 representa que não foi enviado ainda
+	        $rs = dbQuery(
+	        	$con,
+	        	"SELECT r.email as email, c.nome as nome, c.telefone as telefone
+	        	 FROM restantes r
+	        	 LEFT JOIN contatos c ON c.email = r.email
+	        	 WHERE r.mensagem=? AND r.enviado='0'
+	        	 GROUP BY r.email
+	        	 LIMIT 10",
+	        	"i",
+	        	$id
+	        );
 	    }else{
 			if($grupo > 0){
-				//Capturar Emails do Grupo
-				$strSQL = "SELECT email FROM contatos WHERE grupo='".$grupo."' AND aut='1' ";//Query da Tabela Contatos
-				/*$strSQL = "SELECT m.email FROM contatos m WHERE grupo='3' AND aut='1' AND NOT EXISTS
-				        (
-				        SELECT  1
-				        FROM    views e
-				        WHERE   e.contato = m.email
-				        )";*/
+				$rs = dbQuery($con, "SELECT email, nome, telefone FROM contatos WHERE grupo=? AND aut='1'", "i", $grupo);
 			}else{
-				$strSQL = "SELECT email FROM contatos WHERE aut='1';";
+				$rs = dbQuery($con, "SELECT email, nome, telefone FROM contatos WHERE aut='1'", "");
 			}
-			//echo $strSQL;
 		}
-		//print_r($strSQL);
-		$rs = mysqli_query($con,$strSQL);
 
-		//$grupo = "";
         $i = 0;
 		while($row = mysqli_fetch_array($rs)){
-			$arrEmail[$i] = $row["email"];
+			$arrEmail[$i] = ['email' => $row["email"], 'nome' => $row["nome"] ?? '', 'telefone' => $row["telefone"] ?? ''];
 			if(!$continuar){
-				if (!filter_var($arrEmail[$i], FILTER_VALIDATE_EMAIL) === false) { //Verifica se é email de verdade
-					$sqlLog = "INSERT INTO restantes VALUES(DEFAULT,'$id','".$arrEmail[$i]."','0');";
-					mysqli_query($con,$sqlLog);
+				if (!filter_var($arrEmail[$i]['email'], FILTER_VALIDATE_EMAIL) === false) {
+					dbQuery($con, "INSERT INTO restantes VALUES(DEFAULT,?,?,'0')", "is", $id, $arrEmail[$i]['email']);
 				}
 			}
             $i++;
@@ -132,28 +159,23 @@
 		if(!$continuar){
 			for($i=0;$i<count($arrEmailsComp);$i++){
 				if (!filter_var($arrEmailsComp[$i], FILTER_VALIDATE_EMAIL) === false) {
-					$sqlLog = "INSERT INTO restantes VALUES(DEFAULT,'$id','".$arrEmailsComp[$i]."','0');";
-					mysqli_query($con,$sqlLog);
+					dbQuery($con, "INSERT INTO restantes VALUES(DEFAULT,?,?,'0')", "is", $id, $arrEmailsComp[$i]);
 				}
 			}
 		}
 
 
-		//Capturar Nome do Grupo
-		$strSQL = "SELECT titulo FROM grupos WHERE id='".$grupo."' LIMIT 1";//Query da Tabela Grupos
-		$rs = mysqli_query($con,$strSQL);
-		while($row = mysqli_fetch_array($rs)){
-			$grupo = $row["titulo"];
-		}
-
-		//echo count($arrEmail)."<br/>";
-
 		//Agora precisamos adicionar os emails complementares aos emails que serão utilizados
 		if(trim($emailsComp) != "" && !$continuar){
-			$arrEmail = array_merge($arrEmailsComp,$arrEmail);//Estou fundindo as duas arrays em uma, sendo que estou usando a mesma variável da array de emails, para poder otimizar a semântica e reaproveitar o espaço reservado na memória
+			$arrEmailsCompRico = [];
+			foreach($arrEmailsComp as $emailComp){
+				$emailComp = trim($emailComp);
+				if($emailComp === '') continue;
+				$contatoEncontrado = buscarContatoPorEmail($con, $emailComp);
+				$arrEmailsCompRico[] = ['email' => $emailComp, 'nome' => $contatoEncontrado['nome'], 'telefone' => $contatoEncontrado['telefone']];
+			}
+			$arrEmail = array_merge($arrEmailsCompRico, $arrEmail);
 		}
-		//echo count($arrEmail)."<br/>";
-		//print_r($arrEmail);
 
 
 		//---FIM DA EXPLICAÇÃO
@@ -161,8 +183,13 @@
 	    for($i=0;$i < count($arrEmail); $i++){        //Inicia o laço para construir os emails.
 
 		    if($i < 1){  // Manipular para enviar mais de um email no mesmo processo
-			    $urlCancelamento = $caminhoURL."/cancelamento.php?email=".$arrEmail[$i];
-			    //Montar Mensagem
+		    	$contatoAtual = $arrEmail[$i];
+		    	$emailDestino = $contatoAtual['email'];
+		    	$assuntoPersonalizado = substituirVariaveis($assunto, $contatoAtual);
+		    	$mensagemPersonalizada = substituirVariaveis($mensagem, $contatoAtual);
+
+			    $urlCancelamento = $caminhoURL."/cancelamento.php?email=".urlencode($emailDestino);
+				//Montar Mensagem
 				$emailCompleto = '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 					<html xmlns="http://www.w3.org/1999/xhtml">
 					<head>
@@ -171,18 +198,18 @@
 						font-family: Helvetica, Roboto, Arial;
 					}
 					</style>
-					<title>$assunto</title>
+					<title>'.htmlspecialchars($assuntoPersonalizado).'</title>
 					<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 					</head>
 					<body>';
-				$emailCompleto .= $mensagem;
-        		$emailCompleto .= "<img src=\"".$caminhoURL."/contador.php?email=".$arrEmail[$i]."&mensagem=".$id."\" height=\"90\" style=\"height: 90px; width: auto; text-align: center; border: none;\" />";
+				$emailCompleto .= $mensagemPersonalizada;
+        		$emailCompleto .= "<img src=\"".$caminhoURL."/contador.php?email=".urlencode($emailDestino)."&mensagem=".$id."\" height=\"90\" style=\"height: 90px; width: auto; text-align: center; border: none;\" />";
 				$emailCompleto .= "<center style='font-size:.8em;'>Caso você não consiga visualizar este email corretamente, <a href='$url' target='_blank'>clique aqui para acessar</a>.</center>";
 				$emailCompleto .= "<center style='font-size:.8em;'><a href='$urlCancelamento' target='_blank'>Cancelar Inscrição</a></center>";
 				$emailCompleto .= '</body>';
 
-				$urlAtivaSimples = "href='".$caminhoURL."link.php?email=".$arrEmail[$i]."&mensagem=$id&link=";
-				$urlAtivaDupla = 'href="'.$caminhoURL."link.php?email=".$arrEmail[$i]."&mensagem=$id&link=";
+				$urlAtivaSimples = "href='".$caminhoURL."link.php?email=".urlencode($emailDestino)."&mensagem=$id&link=";
+				$urlAtivaDupla = 'href="'.$caminhoURL."link.php?email=".urlencode($emailDestino)."&mensagem=$id&link=";
 				$emailCompleto = str_replace("href='http://",$urlAtivaSimples, $emailCompleto);
 				$emailCompleto = str_replace('href="http://',$urlAtivaDupla, $emailCompleto);
 				$emailCompleto = str_replace("href='https://",$urlAtivaSimples, $emailCompleto);
@@ -190,90 +217,55 @@
 
 				// Cabeçalhos
 				$headers = "MIME-Version: 1.0" . "\r\n";
-				$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";        //Envia o email com codificação UTF-8.
+				$headers .= "Content-type:text/html;charset=UTF-8" . "\r\n";
 				$headers .= 'From: '.$nome.' <'.$envio.'> '."\r\n".
 				'Reply-To: '.$envio."\r\n" .
 				'X-Mailer: PHP/' . phpversion();
 
-				$errors = "";       //Variável onde os erros são armazenados.
-
+				$errors = "";
+				$retorno = false;
 
 				if($usarSMTP){
 					include_once("libs/phpmail/PHPMailerAutoload.php");
 
 					$mail = new PHPMailer();
-					//$mail->IsSMTP(); // telling the class to use SMTP
 					$mail->CharSet = $charset;
-					$mail->Host = $smtp; // SMTP server
-					$mail->SMTPDebug = 0; // enables SMTP debug information (for testing)
+					$mail->Host = $smtp;
+					$mail->SMTPDebug = 0;
 					if($emailResposta != null && $emailResposta != ""){
 						$mail->AddReplyTo($emailResposta, $nomeEmailResposta);
 					}
-					// 1 = errors and messages
-					// 2 = messages only
-					$mail->SMTPAuth = $autenticacao; // enable SMTP authentication
+					$mail->SMTPAuth = $autenticacao;
 					$mail->SMTPSecure = $seguranca;
-					$mail->Port = $porta; // set the SMTP port for the service server
-					$mail->Username = $envio; // account username
-					$mail->Password = $senha_email; // account password
+					$mail->Port = $porta;
+					$mail->Username = $envio;
+					$mail->Password = $senha_email;
 
 					$mail->SetFrom($envio, $nome_envio);
-					$mail->Subject = $assunto;
+					$mail->Subject = $assuntoPersonalizado;
 					$mail->MsgHTML($emailCompleto);
-					$mail->AddAddress($arrEmail[$i], "");
-
-					//echo $envio.$senha_email;
+					$mail->AddAddress($emailDestino, "");
 
 					$retorno = $mail->Send();
 				}else{
-					$retorno = @mail($arrEmail[$i], $assunto, $emailCompleto, $headers);
+					$retorno = @mail($emailDestino, $assuntoPersonalizado, $emailCompleto, $headers);
 				}
 
-				//echo $local;
-				//kill_the_process();//this will kill the running process launched by script
-				//	connection_aborted();
-				// die();
-				//shell_exec("(sleep 5; php $local)");
 				if($retorno){
-					$sqlEnviado = "UPDATE restantes SET enviado='1' WHERE mensagem='$id' AND email='".$arrEmail[$i]."';"; // Enviado 1 representa sucesso
-
+					dbQuery($con, "UPDATE restantes SET enviado='1' WHERE mensagem=? AND email=?", "is", $id, $emailDestino);
 				}else{
-					$sqlEnviado = "UPDATE restantes SET enviado='2' WHERE mensagem='$id' AND email='".$arrEmail[$i]."';"; //Enviado 2 representa erro
+					dbQuery($con, "UPDATE restantes SET enviado='2' WHERE mensagem=? AND email=?", "is", $id, $emailDestino);
 				}
-
-				//print_r($sqlEnviado);
-				//echo "<br/>";
-				//Atualizar Tabela de Enviados
-				mysqli_query($con,$sqlEnviado);
-				//echo "<br/>";
-				//print_r($con);
 			}
-			//else{
-				//$emailsRestantes = str_replace($emailsEnviados, "", $_POST);
-				//file_put_contents("temp.txt", $emailsRestantes);                   //Salva os emails restantes no documento temp.txt.
-		//	}
         }
-
-        //die();
-
-
-
-       /* if(count($EmailsEnviados) > 0 && count($EmailsFaltantes) == 0){
-	        $sql = "UPDATE mensagens SET data_envio_ini='".$horarioEnvio."', status='2' WHERE id='$id';";
-        }elseif(count($EmailsFaltantes)==0){
-	        $sql = "UPDATE mensagens SET data_envio_ini='".$horarioEnvio."', status='3' WHERE id='$id';";
-        }else{
-	        $sql = "UPDATE mensagens SET data_envio_ini='".$horarioEnvio."', status='1' WHERE id='$id';";
-        }
-        $rs = mysqli_query($con,$sql);*/
 ?>
 <?php
 	endif;
-	
+
 	if($grupo > 0){
-		$strSQL = "SELECT titulo FROM grupos WHERE grupo = '" . $grupo . "'"; 
-		$rs = mysqli_query($con,$sql);
-		while($row = mysqli_fetch_array($rs)){
+		$rsGrupo2 = dbQuery($con, "SELECT titulo FROM grupos WHERE id=?", "i", $grupo);
+		$nomeGrupo = "Todos";
+		while($row = mysqli_fetch_array($rsGrupo2)){
 			$nomeGrupo = $row["titulo"];
 		}
 	}else{
@@ -284,53 +276,13 @@
 <div class="wrap so_tabela tela_confirmacao">
 	<h1 class="sucesso">Iniciado Processo de Envio de Emails</h1>
     <center>
-		<p>Utilize a Tela de <a href="<?php echo $caminhoURL; ?>emails.php">Emails Enviados</a> para 
+		<p>Utilize a Tela de <a href="<?php echo $caminhoURL; ?>emails.php">Emails Enviados</a> para
     <div class="area_tabela">
 	   	<center>
-	    <h3>Assunto: <?php echo $assunto; ?></h3>
-	    <h3>Grupo: <?php echo $nomeGrupo; ?></h3>
+	    <h3>Assunto: <?php echo htmlspecialchars($assunto); ?></h3>
+	    <h3>Grupo: <?php echo htmlspecialchars($nomeGrupo); ?></h3>
 	    <h3>Processo Iniciado em: <?php echo date('d/m/Y H:i',strtotime($horarioEnvio)); ?></h3>
-	    <!--<h3>Enviados: <?php echo count($EmailsEnviados); ?></h3>
-	    <h3>Não Enviados: <?php echo count($EmailsFaltantes); ?></h3>-->
 	    <div class="tabela">
-	<!--<?php if(count($EmailsFaltantes) > 0):?>
-	<table class="resultado">
-		<caption style="background-color: #d69a03">Faltou</caption>
-		<thead>
-			<th>Email</th>
-		</thead>
-		<tbody>
-			<?php
-				for($i=0; count($EmailsFaltantes)> $i; $i++):
-			?>
-			<tr>
-				<td><?php echo $EmailsFaltantes[$i]?></td>
-			</tr>
-			<?php
-				endfor;
-			?>
-		</tbody>
-	</table>
-	<?php endif;?>
-	<?php if(count($EmailsEnviados) > 0):?>
-	<table class="resultado">
-		<caption style="background-color: #00ce8d">Enviados com Sucesso</caption>
-		<thead>
-			<th>Email</th>
-		</thead>
-		<tbody>
-			<?php
-				for($i=0; count($EmailsEnviados)> $i; $i++):
-			?>
-			<tr>
-				<td><?php echo $EmailsEnviados[$i]?></td>
-			</tr>
-			<?php
-				endfor;
-			?>
-		</tbody>
-	</table>-->
-	<?php endif;?>
 	    </div>
 
     </div>
@@ -339,32 +291,24 @@
 	endif;
 ?>
 <?php
-		//print_r($arrEmail);
-		//die();
-
 	//Registrar o Atualização do Envio -- Retirar caso pese muito no servidor
-	$sql = "UPDATE mensagens SET data_atualizacao='".$horarioEnvio."', status='1',obs='Enviando' WHERE id='$id';";
-    $rs = mysqli_query($con,$sql);
+	dbQuery($con, "UPDATE mensagens SET data_atualizacao=?, status='1', obs='Enviando' WHERE id=?", "si", $horarioEnvio, $id);
 
 	include "footer.php";
 
 	if(count($arrEmail) != 0){
-		$local = $caminhoURL."enviar.php?id=".$id."\&acao=".$acao."\&continuar=1";
-		$logFile = realpath(dirname(__FILE__)).".log";
-		//echo $local;
-		//echo count($arrEmail);
+		$local = $caminhoURL."enviar.php?id=".$id."&acao=".$acao."&continuar=1&token=".tokenContinuacaoEnvio($id);
 		$segundos= 60/($emailsHora/60);
 		if($continuar):?>
 			<h1>Envios Retomados</h1>
 		<?php
 			sleep(round($segundos)); // 30 = 2 emails por minuto
 		endif;
-		$exec = exec("curl --request GET $local > /dev/null 2>/dev/null &"); //Executar de forma de assínscrona e em background
-		//set_time_limit(0);
+		$local_escapado = escapeshellarg($local);
+		$exec = exec("curl --request GET $local_escapado > /dev/null 2>/dev/null &"); //Executar de forma de assínscrona e em background
 
 	}else{
 		//Registrar o Fim do Envio
-		$sql = "UPDATE mensagens SET data_envio_fin='".$horarioEnvio."', status='2',obs='Terminado' WHERE id='$id';";
-        $rs = mysqli_query($con,$sql);
+		dbQuery($con, "UPDATE mensagens SET data_envio_fin=?, status='2', obs='Terminado' WHERE id=?", "si", $horarioEnvio, $id);
 	}
 ?>

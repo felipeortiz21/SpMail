@@ -1,32 +1,49 @@
-﻿<?php
-ini_set('display_errors', 0); 
+<?php
+	/*****************************
+		SpMail
+		Mantido por Spiral Soluções e Consultoria LTDA
+		Baseado no projeto PortilloMail, iniciado por Rodrigo Portillo em 2015
+		Distribuído sob Licença Mozilla Public License 2.0
+		Contato: contato@spiralsolucoes.com
+	******************************/
+ini_set('display_errors', 0);
+
+if(is_file(__DIR__ . "/.instalado")){
+	die("<div style='background-color: #FFFF99;border: 2px solid #EFAD40;color: #5C5013;text-align: center;padding: .5em 1em;box-sizing: border-box;border-radius: 10px;margin: 0 auto; margin-top:10px;max-width:800px; width:80%;'>Este SpMail já foi instalado. Por segurança, o instalador não roda de novo.</div>");
+}
+
 include_once("../libs/config.php");
+include_once("../libs/db.php");
+
 if(isset($_REQUEST["url"])){
-	$cUrl = trim($_REQUEST["url"]);
-	$cPasta = trim($_REQUEST["pasta"]);
-	$cNomeEmpresa = trim($_REQUEST["nome_empresa"]);
-	$cSmtp = trim($_REQUEST["smtp"]);
-	$cPorta = trim($_REQUEST["porta"]);
-	$cSeguranca = trim($_REQUEST["seguranca"]);
-	$cAutenticacao = trim($_REQUEST["autenticacao"]);
-	$cEmailResposta = trim($_REQUEST["email_resposta"]);
-	$cNomeEmailResposta = trim($_REQUEST["nome_email_resposta"]);
-	$cEmailsPorHora = trim($_REQUEST["emails_por_hora"]);
-	$cEmailsPorHoraNaoComercial = trim($_REQUEST["emails_por_hora_nao_comercial"]);
-	$cHorarioComercialIni = trim($_REQUEST["horario_comercial_ini"]);
-	$cHorarioComercialFin = trim($_REQUEST["horario_comercial_fin"]);
-	
-	$sql = "TRUNCATE config;";
-	$rsSql = mysqli_query($con,$sql);
-	
-	$sql = "INSERT INTO config VALUES ('$cUrl','$cPasta','$cNomeEmpresa','$cSmtp','$cPorta','$cSeguranca','$cAutenticacao','$cEmailResposta','$cNomeEmailResposta','$cEmailsPorHora','$cEmailsPorHoraNaoComercial','$cHorarioComercialIni','$cHorarioComercialFin')";
-	
-	//echo $sql;
-	
-	$rsSql = mysqli_query($con,$sql);
-	
+	$cUrl = trim($_REQUEST['url']);
+	$cPasta = trim($_REQUEST['pasta']);
+	$cNomeEmpresa = trim($_REQUEST['nome_empresa']);
+	$cSmtp = trim($_REQUEST['smtp']);
+	$cPorta = trim($_REQUEST['porta']);
+	$cSeguranca = trim($_REQUEST['seguranca']);
+	$cAutenticacao = (int) $_REQUEST['autenticacao'];
+	$cEmailResposta = trim($_REQUEST['email_resposta']);
+	$cNomeEmailResposta = trim($_REQUEST['nome_email_resposta']);
+	$cEmailsPorHora = (int) $_REQUEST['emails_por_hora'];
+	$cEmailsPorHoraNaoComercial = (int) $_REQUEST['emails_por_hora_nao_comercial'];
+	$cHorarioComercialIni = (int) $_REQUEST['horario_comercial_ini'];
+	$cHorarioComercialFin = (int) $_REQUEST['horario_comercial_fin'];
+
+	dbQuery($con, "TRUNCATE config;");
+
+	$rsSql = dbQuery(
+		$con,
+		"INSERT INTO config VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
+		"ssssssississi",
+		$cUrl, $cPasta, $cNomeEmpresa, $cSmtp, $cPorta, $cSeguranca, $cAutenticacao,
+		$cEmailResposta, $cNomeEmailResposta, $cEmailsPorHora, $cEmailsPorHoraNaoComercial,
+		$cHorarioComercialIni, $cHorarioComercialFin
+	);
+
 	if($rsSql){
 		echo('<META http-equiv="refresh" content="1;URL=finalizar.php">');
+		exit;
 	}else{
 		echo "<div style='background-color: #FFFF99;border: 2px solid #EFAD40;color: #5C5013;text-align: center;padding: .5em 1em;box-sizing: border-box;border-radius: 10px;margin: 0 auto; margin-top:10px;max-width:800px; width:80%;'>Não foi possível atualizar o Banco de Dados. Por favor, verifique os dados que foram passados. Também certifique-se que o usuário que você digitou tem permissões para modificar este banco de dados.</div>";
 	}
@@ -35,12 +52,10 @@ if(isset($_REQUEST["url"])){
 <!DOCTYPE html>
 <html lang="pt_br">
 	<head>
-	    <meta charset="utf-8"> 
+	    <meta charset="utf-8">
 		<link rel="stylesheet" href="../css/estilo.css">
-        <title>Instalador PortilloMail</title>
+        <title>Instalador SpMail</title>
         <meta name="description" content="Gerenciador de Mailmarketing">
-        <link rel="publisher" href="https://plus.google.com/112684470634109423906"/>
-        <link rel="author" href="https://www.facebook.com/profile.php?id=100008652127063"/>
         <meta name="robots" content="no-index" />
         <link rel="icon" type="image/png" href="../assets/simbolo.png" />
 	</head>
@@ -50,27 +65,27 @@ if(isset($_REQUEST["url"])){
 				<img src="../assets/logo_maior.png"/>
 			</center>
 			<h1>Banco Criado com Sucesso!</h1>
-			<h2>Agora, por favor, preencha as informações básicas para a operação do PortilloMail.</h2>
+			<h2>Agora, por favor, preencha as informações básicas para a operação do SpMail.</h2>
 			<form action="passo2.php" method="post">
 				<div>
 					<p class="mini-info">Preencha com a URL correta do site. Esse caminho é importante para definir onde os links, contadores e imagens irão referenciar.</p>
 					<input type="text" name="url" placeholder="https://meusite.com.br" value="https://<?php echo $_SERVER['HTTP_HOST']; ?>" autocomplete="off" required/>
 				</div>
 				<div>
-					<p class="mini-info">Preencha com o nome da pasta onde você enviou os arquivos do PortilloMail</p>
+					<p class="mini-info">Preencha com o nome da pasta onde você enviou os arquivos do SpMail</p>
 					<?php
 						$uri = $_SERVER['REQUEST_URI'];
 						$uri = str_replace("/instalador/passo2.php","",$uri);
 						$uri = ltrim($uri, '/');
 					?>
-					<input type="text" name="pasta" placeholder="mailing" autocomplete="off" value="<?php echo $uri; ?>" required/>
+					<input type="text" name="pasta" placeholder="mailing" autocomplete="off" value="<?php echo htmlspecialchars($uri); ?>" required/>
 				</div>
 				<div>
-					<p class="mini-info">Digite o nome da Empresa ou Instituição que usará o PortilloMail</p>
-					<input type="text" name="nome_empresa" placeholder="PortilloDesign" autocomplete="off" required/>
+					<p class="mini-info">Digite o nome da Empresa ou Instituição que usará o SpMail</p>
+					<input type="text" name="nome_empresa" placeholder="Minha Empresa" autocomplete="off" required/>
 				</div>
 				<h4>Dados de Emails</h4>
-				<p>Todos os emails que serão cadastrados usarão os mesmos dados de acesso. Essa decisão visa diminuir a incidência de uso do sistema para spammers. Consulte sua hospedagem ou servidor de emails para verificar esses dados. Você pode deixar para prrencher esses itens depois, mas é altamente recomendável que faça isso agora.</p>
+				<p>Todos os emails que serão cadastrados usarão os mesmos dados de acesso. Essa decisão visa diminuir a incidência de uso do sistema para spammers. Consulte sua hospedagem ou servidor de emails para verificar esses dados. Você pode deixar para preencher esses itens depois, mas é altamente recomendável que faça isso agora.</p>
 				<div>
 					<p class="mini-info">Digite o endereço do SMTP dos emails que serão usados para envio.</p>
 					<input type="text" name="smtp" placeholder="smtp.servidor.com" autocomplete="off"/>
@@ -121,14 +136,13 @@ if(isset($_REQUEST["url"])){
 				<button type="submit">Próximo Passo</button>
 			</form>
 			<div class="info">
-				Para funcionamento correto do do PortilloMail, recomendamos que use, pelo menos, PHP 5.4 ou superior e é necessário que use um banco MySQL.<br/>
+				Requisitos: PHP 8.1 ou superior e um banco MySQL 8 / MariaDB.<br/>
 				Caso você tenha dificuldades, consulte sua hospedagem para saber como criar um novo banco de dados, usuário e senha.
 			</div>
 		</div>
-		
+
 		<div class="powered" style="position: fixed;right: 5px;bottom: 5px;text-align: right;color:lightgrey; font-size:16px;">
-		<em>Powered By</em><a href="https://portillodesign.com.br" title="PortilloDesign" itemprop="url" target="_blank"><img style="height: 32px;
-			margin-bottom:-10px;width: auto;border-radius:5px;margin-left:5px;margin-right:5px" itemprop="logo" class="logo" src="https://portillodesign.com.br/images/logo/apple-icon-114x114.png" alt="Logo da PortilloDesign" title="PortilloDesign"></a><span itemprop="name">0.9</span>
+			Powered by Spiral Soluções e Consultoria
 		</div>
 	</body>
 </html>

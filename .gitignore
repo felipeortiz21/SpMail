@@ -1,0 +1,9 @@
+# Segredos - nunca commitar
+projeto/.env
+
+# Instalador já usado (trava de reentrada, ver instalador/index.php)
+projeto/instalador/.instalado
+
+# Arquivos de SO/editor
+.DS_Store
+Thumbs.db

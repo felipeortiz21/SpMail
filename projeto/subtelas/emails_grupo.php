@@ -1,14 +1,25 @@
-﻿<?php
-	//include "header.php";
-	include "../libs/conexao.php";        //Conexão com o banco de dados.
+<?php
+	/*****************************
+		SpMail
+		Mantido por Spiral Soluções e Consultoria LTDA
+		Baseado no projeto PortilloMail, iniciado por Rodrigo Portillo em 2015
+		Distribuído sob Licença Mozilla Public License 2.0
+		Contato: contato@spiralsolucoes.com
+	******************************/
+	include "../libs/seguranca.php";
+	include "../libs/db.php";
 	include "../functions.php";
-	
-	$idGrupo = $_REQUEST["id_grupo"];
+	protegePagina();
+
+	$idGrupo = (int) $_REQUEST["id_grupo"];
 ?>
 <?php
-	//SELECIONAR ITENS PARA PREENCHER A GRID
-	$strSQL = "SELECT cont.id,cont.email,cont.nome,cont.telefone,cont.grupo, (SELECT titulo FROM grupos WHERE id = cont.grupo) AS titulo_grupo FROM contatos cont WHERE cont.aut = 1 AND cont.grupo = $idGrupo";   //Variável que armazena strings para extrair os dados da tabela.
-	$rs = mysqli_query($con,$strSQL);        //$rs = returnset. Retorno dos dados da tabela.
+	$rs = dbQuery(
+		$con,
+		"SELECT cont.id,cont.email,cont.nome,cont.telefone,cont.grupo, (SELECT titulo FROM grupos WHERE id = cont.grupo) AS titulo_grupo FROM contatos cont WHERE cont.aut = 1 AND cont.grupo = ?",
+		"i",
+		$idGrupo
+	);
 ?>
 	<table>
 		<caption>Contatos</caption>
@@ -23,20 +34,13 @@
 				while($row = mysqli_fetch_array($rs)):
 			?>
 			<tr>
-				<td rel="id"><?php echo $row['id']?></td>
-				<td rel="email"><?php echo $row['email']?></td>
-				<td rel="nome"><?php echo $row['nome']?></td>
-				<td rel="telefone"><?php echo $row['telefone']?></td>
+				<td rel="id"><?php echo (int) $row['id']?></td>
+				<td rel="email"><?php echo htmlspecialchars($row['email'])?></td>
+				<td rel="nome"><?php echo htmlspecialchars($row['nome'])?></td>
+				<td rel="telefone"><?php echo htmlspecialchars($row['telefone'])?></td>
 			</tr>
 			<?php
 				endwhile;
 			?>
 		</tbody>
 	</table>
-	<h3>
-		<?php 
-			if(isset($_REQUEST[$titulo])){
-				$titulo = "";
-			}
-		?>
-	</h3>

@@ -1,112 +1,76 @@
-﻿<?php
-ini_set('display_errors', 0); 
+<?php
+	/*****************************
+		SpMail
+		Mantido por Spiral Soluções e Consultoria LTDA
+		Baseado no projeto PortilloMail, iniciado por Rodrigo Portillo em 2015
+		Distribuído sob Licença Mozilla Public License 2.0
+		Contato: contato@spiralsolucoes.com
+	******************************/
+ini_set('display_errors', 0);
 
-$host = $_REQUEST["host"];
-$user = $_REQUEST["user"];
-$pswd = $_REQUEST["pswd"];
-$dbname = $_REQUEST["dbname"];
+if(is_file(__DIR__ . "/.instalado")){
+	die("<div style='background-color: #FFFF99;border: 2px solid #EFAD40;color: #5C5013;text-align: center;padding: .5em 1em;box-sizing: border-box;border-radius: 10px;margin: 0 auto; margin-top:10px;max-width:800px; width:80%;'>Este SpMail já foi instalado. Por segurança, o instalador não roda de novo.</div>");
+}
+
+// Remove quebras de linha - um valor com quebra de linha quebraria o formato do .env
+function linhaUnica($valor){
+	return str_replace(["\r", "\n"], '', $valor);
+}
+
+$host = linhaUnica(trim($_REQUEST["host"] ?? ''));
+$user = linhaUnica(trim($_REQUEST["user"] ?? ''));
+$pswd = linhaUnica(trim($_REQUEST["pswd"] ?? ''));
+$dbname = linhaUnica(trim($_REQUEST["dbname"] ?? ''));
 
 //Testar conexão
-$con 	= null; // Conexão
 $con = mysqli_connect($host, $user, $pswd);
 if (!$con) {
 	echo "<div style='background-color: #FFFF99;border: 2px solid #EFAD40;color: #5C5013;text-align: center;padding: .5em 1em;box-sizing: border-box;border-radius: 10px;margin: 0 auto; margin-top:10px;max-width:800px; width:80%;'>Não foi possível conectar. Por favor, verifique as configuraçoes para conexão ao Banco de Dados.</div>";
 	include_once("index.php");
+	exit;
 }
-else{
-	$fp = fopen('../libs/config.php','w');
-	fwrite($fp, '<?php
 
-		/*****************************
-			PortilloMail
-			Projeto Iniciado por Rodrigo Portillo em 2015
-			Projeto colocado sob Licença Mozilla
-			@author Rodrigo Portillo
-			@url https://velhobit.com.br
-		******************************/
+mysqli_select_db($con, $dbname);
+mysqli_set_charset($con, "utf8mb4");
 
-		//Dados globais para configuração do sistema de emails.
-		$currentURL = "";
-		$pastaURL = "";
-		$caminhoURL = "";
-		$nomeEmpresa = "";
+// Preserva uma APP_KEY já existente (ex: gerada pelo install.sh) - só gera uma
+// nova se ainda não houver nenhuma, para não invalidar segredos já cifrados.
+$envAtual = @file_get_contents(__DIR__ . "/../.env");
+$appKey = null;
+if($envAtual !== false && preg_match('/^APP_KEY=(.+)$/m', $envAtual, $m)){
+	$appKey = trim($m[1]);
+}
+if($appKey === null || $appKey === ''){
+	$appKey = base64_encode(random_bytes(32));
+}
 
-		//Caso use SMTP, coloque como true, caso contrário, usará a função mail nativa. O SMTP é provido pelo projeto PHPMAiler: https://github.com/PHPMailer/PHPMailer
-		$usarSMTP = true;
-		$charset = "UTF-8";
-		$smtp = "";
-		$porta = "";
-		$seguranca = "";
-		$autenticacao = true;
+$envConteudo = "DB_HOST={$host}\n";
+$envConteudo .= "DB_USER={$user}\n";
+$envConteudo .= "DB_PASS={$pswd}\n";
+$envConteudo .= "DB_NAME={$dbname}\n";
+$envConteudo .= "APP_KEY={$appKey}\n";
 
-		$emailResposta = "";
-		$nomeEmailResposta = "";
+$fp = fopen(__DIR__ . '/../.env', 'w');
+fwrite($fp, $envConteudo);
+fclose($fp);
+@chmod(__DIR__ . '/../.env', 0640);
 
-		$emailsHora = 0; //Valor aproximado, pois o resultado final vai ser convertido 
-		$emailsHoraNaoComercial = 0;
-		$horarioComercial_ini = 0;
-		$horarioComercial_fin = 0;
+// Importa o schema (arquivo estático, sem dado vindo de fora - seguro rodar direto)
+$templine = '';
+$lines = file(__DIR__ . "/modelo_banco.sql");
 
-		$host	= "'.$host.'"; // IP do Banco
-		$user 	= "'.$user.'"; // Usuário
-		$pswd 	= "'.$pswd.'"; // Senha
-		$dbname	= "'.$dbname.'"; // Banco
-		$con 	= null; // Conexão
+foreach ($lines as $line)
+{
+	if (substr(trim($line), 0, 2) == '--' || trim($line) == '')
+		continue;
 
+	$templine .= $line;
 
-		$con = mysqli_connect($host, $user, $pswd);
-		if (!$con) {
-			die("Não foi possível conectar: " . mysqli_error());
-		}
-		mysqli_select_db($con, $dbname);
-		mysqli_set_charset($con, "utf-8"); //Corrigir UTF8
-
-		//Preencher Configurações Globais
-		$SQLConfig = "SELECT * from config;";   //Variável que armazena strings para extrair os dados da tabela.
-		$rsConfig = mysqli_query($con,$SQLConfig);        //$rs = returnset. Retorno
-		while($rConfig = mysqli_fetch_array($rsConfig)){
-			//Dados globais para configuração do sistema de emails.
-			$currentURL = $rConfig["url"];
-			$pastaURL = "/".$rConfig["pasta"]."/";
-			$caminhoURL = $currentURL . $pastaURL;
-			$nomeEmpresa = $rConfig["nome_empresa"];
-
-			//Caso use SMTP, coloque como true, caso contrário, usará a função mail nativa. O SMTP é provido pelo projeto PHPMAiler: https://github.com/PHPMailer/PHPMailer
-			$smtp = $rConfig["smtp"];
-			$porta = $rConfig["porta"];
-			$seguranca = $rConfig["seguranca"];
-			$autenticacao = $rConfig["autenticacao"];
-
-			$emailResposta = $rConfig["email_resposta"];
-			$nomeEmailResposta = $rConfig["nome_email_resposta"];
-
-			$emailsHora = $rConfig["emails_por_hora"]; //Valor aproximado, pois o resultado final vai ser convertido 
-			$emailsHoraNaoComercial = $rConfig["emails_por_hora_nao_comercial"];
-			$horarioComercial_ini = $rConfig["horario_comercial_ini"];
-			$horarioComercial_fin = $rConfig["horario_comercial_fin"];
-		}
-	?>');
-	fclose($fp);
-
-	$templine = '';
-	
-	$lines = file("modelo_banco.sql");
-	
-	mysqli_select_db($con, $dbname);
-	mysqli_set_charset($con, "utf-8"); //Corrigir UTF8
-	foreach ($lines as $line)
+	if (substr(trim($line), -1, 1) == ';')
 	{
-		if (substr($line, 0, 2) == '--' || $line == '')
-			continue;
-
-		$templine .= $line;
-
-		if (substr(trim($line), -1, 1) == ';')
-		{
-			$rs = mysqli_query($con,$templine);
-			$templine = '';
-		}
+		mysqli_query($con, $templine);
+		$templine = '';
 	}
-	echo('<META http-equiv="refresh" content="1;URL=passo2.php">');
 }
+echo('<META http-equiv="refresh" content="1;URL=passo2.php">');
 ?>

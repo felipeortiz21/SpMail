@@ -1,0 +1,2 @@
+Esta pasta guarda o HTML gerado de cada campanha enviada (ver confirma.php).
+Precisa existir e ser gravável pelo usuário do servidor web (ex: www-data).

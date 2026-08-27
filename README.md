@@ -1,89 +1,101 @@
-# PortilloMail
-Sistema de Gerenciamento e Envio de EmailMarketing - Open Source
-*versão alpha -> 0.3.2*
+# SpMail
 
-Muitas pessoas possuem a necessidade de enviar emails em lote, seja informativo ou publicitário. O problema é que há um custo alto para envio de emails ou possuem certas limitações, como contatos, quantidade de email. Além disso, a necessidade de cada mês pode variar, o que não justifica o valor fixo o custo por email, das empresas de mailmarketing.
+Sistema de gerenciamento e envio de email marketing em PHP, mantido pela **Spiral Soluções e Consultoria LTDA**.
 
-Na prática, quem possui um servidor compartilhado, tem em média o direito de mandar entre 250 e 500 emails por hora. A maioria das empresas não possuem esse fluxo, principalmente fora do horário comercial. O objetivo deste projeto é usar esses envios ociosos e disperdiçados em emailmarketing ou informativo de forma gratuita, aberta e funcional.
+Este projeto é um fork do PortilloMail (código aberto, iniciado por Rodrigo Portillo em 2015), distribuído sob os termos da Mozilla Public License 2.0 (veja o arquivo `LICENSE`).
 
-## O que é o PortilloMail?
-Desenvolvido em PHP, PortilloMail é um sistema de gerenciamento e envio de Emails.
+Contato: **contato@spiralsolucoes.com**
 
-Ele funciona definindo uma quantidade de emails por hora que você deseja enviar, usando o endereço de email de sua preferência para envio e resposta. O usuário é capaz de criar e gerenciar grupos, contatos, outros usuários eenviar emails. O sistema permite testes de email, reinicio do envio em casos de erros, edição de emails em rascunhos e acompanhamento de cliques, saber quantos e quem clicou no email.
+## O que é o SpMail?
 
-**ATENÇÃO: EDITE O ARQUIVO enviar.php E enviar_teste.php para adicionar DKIM
+O SpMail permite enviar campanhas de email em lote usando o endereço de email de sua preferência para envio e resposta, respeitando um limite configurável de emails por hora. É possível criar e gerenciar grupos, contatos e usuários do sistema, acompanhar cliques e visualizações de cada campanha, e retomar automaticamente um envio interrompido.
 
-**Este projeto foi feito por apenas uma pessoa, por tanto há diversos códigos denecessários, assim como ele pode e será otimizado e limpo com o passar do tempo. Esta é apenas uma ferramenta. Não nos responsabilizamos por seu uso, problemas, e materiais ilícitos que podem ser feito por terceiros. Muita atenção a licença usada neste projeto. Fique à vontade para moficiar o leiaute, mas por favor, mantenha a assinatura *Powered By*, mantendo o link.**
+## Funcionalidades
 
-###Lista de Funcionalidades
+- Editor HTML (TinyMCE) para composição dos emails
+- Envio de email de teste antes do disparo real
+- Envio automático por hora, respeitando limites diferentes em horário comercial e fora dele
+- Disparo por grupo de contatos ou para todos os contatos autorizados
+- **Variáveis dinâmicas** `{nome}`, `{email}` e `{telefone}` no assunto e no corpo do email, substituídas pelo dado real de cada contato no momento do envio (veja a seção [Variáveis dinâmicas](#variáveis-dinâmicas))
+- Cadastro e gerenciamento de grupos e contatos, com importação em lote via CSV
+- Cadastro e gerenciamento de usuários do sistema, com papel de **Administrador Geral**
+- Painel de Configurações do Sistema (dados da empresa, SMTP, limites de envio, horário comercial), restrito ao Administrador Geral
+- Uso de servidor SMTP externo (via PHPMailer) ou da função `mail()` nativa do PHP
+- Retomada automática do envio em caso de interrupção
+- Acompanhamento de cliques e visualizações por campanha, com painel de estatísticas
+- Página de descadastro automática para quem não quiser mais receber emails
+- Geração automática de uma página HTML com o email completo, para quem não conseguir visualizar corretamente
+- Verificação de formato de email e remoção automática de duplicados no envio
 
-- Escrever ou colar códigos HTML para envio de email
-- Enviar email de teste
-- Enviar emails automaticamente por hora
-- Enviar emails por grupos
-- Cadastro e gerenciamento dos grupos de destinatários
-- Cadastro e gerenciamento individual de destinatário
-- Cadastro e gerenciamento de usuários do sistema
-- Uso de emails em outros servidores (SMTP) ou pelo servidor local (MAIL)
-- Retomada de envio dos emails automáticos em caso de problemas
-- Acompanhamento de quantas pessoas clicaram nos links dos emails e quem clicou
-- Gera automaticamente página html com o email completo, para quem não consegegue visualizar
-- Sistema automático de descadastramento, caso o usuário deseje descadastrar.
-- Inclusão de Email diferente para resposta
-- Registro do início e fim dos envios, assim como horário do último envio enviado
-- É possível verificar se o processo foi interrompido (por reinicio ou outros problemas) e forçar continuação
-- Ignora automaticamente emails repetidos
-- Verifica se é realmente um email antes de enviar
+## Requisitos
 
-###Funcionalidades Planejadas para Próximas Versões
+- PHP 8.1 ou superior, com as extensões `mysqli`, `mbstring`, `curl`, `xml`, `zip` e `gd`
+- MySQL 8 ou MariaDB equivalente
+- Um servidor web (Nginx ou Apache) com PHP-FPM
 
-- Registrar quantas pessoas visualizaram os emails
-- Descrição de quantos emails já foram enviados e quantos faltam
-- Exclusão automática de emails inexistentes da tabela de contato
-- Reiniciar o processoa automaticamente, em caso de erro
-- Envio de múltiplos grupos ao mesmo tempo
-- Otimização de Design
-- Otimização de Queries
-- Limpeza de códigos inúteis
-- Importação de Contatos direto pelo sistema
-- Agendamento de processos através do servidor
-- Ferramenta de Upload de Imagens
-- Pré-visualização de Emails em Dispositivos Móveis
-- Adaptabilidade para mobile e webapp
-- Senha de envio criptografada
-- Instalação Automática
-- Documentação
-- Para mais sugestões, envie email para rodrigo@portillodesign.com.br, com o assunto **PORTILLOMAIL**
+## Instalação
 
-#Instalação
-Requerimentos: PHP 5.4 ou mais recente, MySQL. O sistema foi projetado para ser usado apenas em desktop.
+### 1. Preparar o servidor
 
-1. Utilize o arquivo estrutura.sql para criar as tabelas
-2. Copie os arquivos do projeto para dentro da pasta que deseja usar em seu servidor.
-3. Configure o arquivo /libs/config.php. As instruções encontram-se dentro do próprio arquivo.
-4. Será necessário cadastrar pelo menos um usuário diretamente no banco de dados. Use a senha em MD5 e o email do usuário será o email de envio. A senha do email de envio é diferente da senha do sistema. A senha do envio de email não está criptografada para facilitar a leitura, futuramente iremos criptogrofar essa senha também.
+Em um servidor Ubuntu/Debian, clone o repositório e rode o instalador de servidor:
 
-#Instruções de uso
+```bash
+git clone https://github.com/felipeortiz21/SpMail.git
+cd SpMail
+sudo ./install.sh
+```
 
-Antes de enviar o email, vá na tela de grupos e contatos e os crie ou gerencie. Se preferir, importe os contatos diretamente no banco de dados. Lembre-se de cadastrar, em usuários, a senha do envio de email. Se ocorrer algum problema, coloque essa senha diretamente no banco de dados.
+O `install.sh`:
 
-1. Vá no menu Novo Email
-2. Escreva o assunto, escolha por qual email vai enviar e para qual grupo
-2. Escreva o email ou adicione um HTML em Ferramentas>Código Fonte
-3. Clique em Enviar
-4. Na tela de Confirmação, verifique os dados. Se necessário volte.
-5. Envie um email de teste para confirmar sua formatação e funcionamento.
-6. Clique em Enviar e aguarde
-7. Acompanhe o processo de envio através de Emails Enviados
+- verifica (e instala, com sua confirmação) PHP-FPM e as extensões necessárias;
+- verifica (e instala, com sua confirmação) o MySQL, caso ainda não esteja presente;
+- cria o banco de dados e um **usuário de banco dedicado** para a aplicação (a aplicação nunca usa o usuário `root` do MySQL);
+- gera o arquivo `.env` com as credenciais e uma chave de criptografia própria (`APP_KEY`);
+- ajusta as permissões dos arquivos para o usuário do servidor web.
 
-#Faça uma doação!
-Se você gostou do projeto, ajude este humilde desenvolvedor a atualiza-lo e trazer novas funções. Assim como trazer a vida outros projetos que estão em desenvolvimento.
+Configure seu servidor web (Nginx/Apache) para apontar para a pasta `projeto/` do repositório clonado.
 
-###Para mais detalhes:
-Acesse https://velhobit.com.br/projetos/portillo-mail.html vídeos, explicações ilustrativas e doação
+### 2. Concluir a instalação pelo navegador
 
-Curta a página da PortilloDesign no Facebook: https://facebook.com/velhobit
+Acesse `https://seudominio.com.br/instalador/` e siga o assistente:
 
-Siga no Twitter e Instagram: @velhobit
+1. Dados de conexão com o banco (o `install.sh` já deixa isso pronto, mas essa tela também funciona sozinha, sem precisar do `install.sh`, para quem só tem acesso via navegador/FTP);
+2. Dados da empresa e do servidor SMTP;
+3. Criação do primeiro usuário - que já nasce como Administrador Geral.
 
-Para dúvidas, acesse o grupo Design e Desenvolvimento no Telegram: https://t.me/designprogramacao
+Ao final, a própria pasta `instalador/` é excluída automaticamente do servidor por segurança.
+
+### Sem acesso root ao servidor?
+
+Se você só tem acesso via navegador/FTP (hospedagem compartilhada, por exemplo), pule o `install.sh` e vá direto para `/instalador/` - basta ter um banco de dados e um usuário MySQL já criados pela sua hospedagem.
+
+## Variáveis dinâmicas
+
+Ao escrever o assunto ou o corpo do email (tela "Novo Email"), use os tokens abaixo em qualquer ponto do texto - eles são substituídos pelo dado de cada contato no momento do envio:
+
+| Variável | Substituída por |
+|---|---|
+| `{nome}` | Nome do contato |
+| `{email}` | Email do contato |
+| `{telefone}` | Telefone do contato |
+
+Um menu "Inserir Variável" acima do assunto e do editor insere o token na posição do cursor. Se o contato não tiver nome cadastrado, `{nome}` é removido do texto e a pontuação ao redor é ajustada automaticamente (ex: "Olá {nome}!" vira "Olá!" em vez de "Olá !").
+
+## Administrador Geral
+
+O primeiro usuário criado pelo instalador já recebe o papel de Administrador Geral. Esse papel é o único com acesso à tela de Configurações do Sistema e à gestão de usuários (criar, editar, desativar). Usuários comuns não veem esses itens no menu.
+
+## Segurança
+
+- Senhas de login usam `password_hash()`/`password_verify()` (bcrypt/argon2). Bases antigas com senha em MD5 continuam funcionando normalmente - o hash é atualizado automaticamente no primeiro login bem-sucedido, sem exigir troca de senha.
+- A senha de envio SMTP é criptografada no banco de dados com a `APP_KEY` gerada na instalação.
+- Todas as consultas ao banco usam prepared statements.
+- Credenciais do banco e a chave de criptografia ficam em um arquivo `.env` (fora do controle de versão), não hardcoded no código.
+
+## Estrutura do banco de dados
+
+O schema completo está em `projeto/instalador/modelo_banco.sql` - é a única fonte de verdade usada pelo instalador. Todas as tabelas usam InnoDB e utf8mb4 (suporte completo a acentuação, emojis e caracteres especiais nas campanhas).
+
+## Suporte
+
+Para dúvidas ou sugestões, entre em contato: **contato@spiralsolucoes.com**
