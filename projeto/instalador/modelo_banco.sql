@@ -86,9 +86,9 @@ CREATE TABLE IF NOT EXISTS `mensagens` (
   `assunto` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email_envio` varchar(5) COLLATE utf8mb4_unicode_ci NOT NULL,
   `status` varchar(1) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `data_envio_ini` datetime NOT NULL,
-  `data_envio_fin` datetime NOT NULL,
-  `data_atualizacao` datetime NOT NULL,
+  `data_envio_ini` datetime NULL DEFAULT NULL,
+  `data_envio_fin` datetime NULL DEFAULT NULL,
+  `data_atualizacao` datetime NULL DEFAULT NULL,
   `obs` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
   `url` text COLLATE utf8mb4_unicode_ci NOT NULL,
   PRIMARY KEY (`id`)
