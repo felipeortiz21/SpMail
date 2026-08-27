@@ -53,8 +53,9 @@
 		$rsConfig = mysqli_query($con, "SELECT * FROM config LIMIT 1");
 		while($rConfig = mysqli_fetch_array($rsConfig)){
 			//Dados globais para configuração do sistema de emails.
-			$currentURL = $rConfig["url"];
-			$pastaURL = "/".$rConfig["pasta"]."/";
+			$currentURL = rtrim($rConfig["url"], "/");
+			$pastaLimpa = trim($rConfig["pasta"], "/");
+			$pastaURL = $pastaLimpa !== "" ? "/".$pastaLimpa."/" : "/";
 			$caminhoURL = $currentURL . $pastaURL;
 			$nomeEmpresa = $rConfig["nome_empresa"];
 
