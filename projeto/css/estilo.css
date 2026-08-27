@@ -67,6 +67,12 @@ a:hover{
    -------------------------------------------------------------------- */
 
 header.cabecalho{
+	/* O Pico classless trata "body > header" como um container e aplica
+	   max-width progressivo (até 1450px) + margem automática pra centralizar -
+	   sem isso, o header fica "flutuando" no meio da tela em telas largas,
+	   deixando fundo branco nas laterais. Aqui ele precisa ser uma barra
+	   full-bleed de verdade, então anulamos o max-width do Pico. */
+	max-width: none;
 	width: 100%;
 	margin: 0;
 	box-sizing: border-box;
