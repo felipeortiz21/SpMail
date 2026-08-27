@@ -333,14 +333,7 @@
 			// só um "&" no fim não é suficiente: o worker do PHP-FPM pode matar
 			// os processos filhos ao terminar a requisição, deixando o envio
 			// preso mesmo com o comando "em background".
-			// TEMPORÁRIO PRA DIAGNÓSTICO: em vez de jogar a saída fora, grava num log
-			// pra descobrir se o curl está de fato falhando (ex: PATH restrito no
-			// PHP-FPM não achando setsid/nohup/curl) - conferir com
-			// "sudo cat /tmp/spmail_continuacao.log" depois de um envio.
-			$logContinuacao = escapeshellarg('/tmp/spmail_continuacao.log');
-			file_put_contents('/tmp/spmail_continuacao.log', "[".date('Y-m-d H:i:s')."] Disparando continuação da mensagem #{$id}: {$local}\n", FILE_APPEND);
-			$exec = exec("setsid nohup curl -v --request GET $local_escapado >> {$logContinuacao} 2>&1 &", $saidaExec, $statusExec);
-			file_put_contents('/tmp/spmail_continuacao.log', "[".date('Y-m-d H:i:s')."] exec() retornou status={$statusExec}\n", FILE_APPEND);
+			$exec = exec("setsid nohup curl --request GET $local_escapado > /dev/null 2>&1 &");
 
 	}else{
 		//Registrar o Fim do Envio
