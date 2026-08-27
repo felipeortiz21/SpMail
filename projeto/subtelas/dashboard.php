@@ -8,6 +8,7 @@
 	******************************/
 	include "../libs/seguranca.php";
 	include_once "../libs/db.php";
+	include_once "../libs/template.php";
 	include "../functions.php";
 	protegePagina();
 
@@ -137,7 +138,8 @@ if(isset($_REQUEST["mensagem"])){
 					$processoInterrompido = false;
 					if($mRow['status'] == 1){
 						$agora = date('d-m-Y H:i:s');
-						$segundos = 60/($emailsHora/60);
+						$segundos = calcularSegundosEntreEnvios($emailsHora);
+						$segundos = $segundos + ($segundos * ($envioVariacaoPercentual / 100)); // tolerância pro jitter
 
 						$proxAtualizacao = strtotime($mRow['data_atualizacao'] . ' +'. ($segundos).' second');
 						$proxAtualizacao = date('Y-m-d', $proxAtualizacao);
@@ -158,9 +160,9 @@ if(isset($_REQUEST["mensagem"])){
 						  		$con,
 						  		"SELECT
 						  			(SELECT count(id) FROM restantes WHERE mensagem = ? AND enviado='1') as total,
-						  			(SELECT count(id) FROM cliques WHERE mensagem = ?) as clicados,
-						  			(SELECT count(id) FROM cliques WHERE link LIKE '%cancelamento%' AND mensagem = ?) as cancelados,
-						  			(SELECT count(id) FROM views WHERE mensagem = ?) as visualizados",
+						  			(SELECT count(DISTINCT contato) FROM cliques WHERE mensagem = ?) as clicados,
+						  			(SELECT count(DISTINCT contato) FROM cliques WHERE link LIKE '%cancelamento%' AND mensagem = ?) as cancelados,
+						  			(SELECT count(DISTINCT contato) FROM views WHERE mensagem = ?) as visualizados",
 						  		"iiii",
 						  		$mRow["id"], $mRow["id"], $mRow["id"], $mRow["id"]
 						  	);
@@ -170,15 +172,20 @@ if(isset($_REQUEST["mensagem"])){
 								$cancelados = (int) $tRow["cancelados"];
 								$visualizados = (int) $tRow["visualizados"];
 							}
-						  	$apenasVisualizados = $visualizados - ($clicados + $cancelados);
-						  	$ignorados = $total - $visualizados;
+						  	// "cliques" já inclui o clique no link de cancelar inscrição, então
+						  	// $clicados e $cancelados não são mutuamente exclusivos - sem
+						  	// descontar isso aqui, o cancelamento entrava duas vezes na conta e
+						  	// podia gerar valor negativo (o Google Charts rejeita fatia negativa).
+						  	$clicadosSemCancelamento = max(0, $clicados - $cancelados);
+						  	$apenasVisualizados = max(0, $visualizados - $clicadosSemCancelamento - $cancelados);
+						  	$ignorados = max(0, $total - $visualizados);
 						  ?>
 						var data = google.visualization.arrayToDataTable([
 						  ['Total de Emails:', '<?php echo $total ?>'],
 						  ['Apenas Visualizados',     <?php echo $apenasVisualizados; ?> ],
 						  ['Cancelados',  <?php echo $cancelados ?>],
 						  ['Ignorados',  <?php echo $ignorados ?>],
-						  ['Clicados',      <?php echo $clicados ?>]
+						  ['Clicados',      <?php echo $clicadosSemCancelamento ?>]
 						]);
 
 						var options = {

@@ -16,7 +16,7 @@
 <?php
 	$rs = dbQuery(
 		$con,
-		"SELECT cont.id,cont.email,cont.nome,cont.telefone,cont.grupo, (SELECT titulo FROM grupos WHERE id = cont.grupo) AS titulo_grupo FROM contatos cont WHERE cont.aut = 1 AND cont.grupo = ?",
+		"SELECT cont.id,cont.email,cont.nome,cont.telefone,cont.grupo, g.titulo AS titulo_grupo FROM contatos cont LEFT JOIN grupos g ON g.id = cont.grupo WHERE cont.aut = 1 AND cont.grupo = ?",
 		"i",
 		$idGrupo
 	);

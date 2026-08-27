@@ -18,7 +18,9 @@ CREATE TABLE IF NOT EXISTS `cliques` (
   `mensagem` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `data_hora` datetime NOT NULL,
   `link` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_cliques_mensagem` (`mensagem`),
+  KEY `idx_cliques_contato` (`contato`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -40,7 +42,12 @@ CREATE TABLE IF NOT EXISTS `config` (
   `emails_por_hora` int(11) NOT NULL,
   `emails_por_hora_nao_comercial` int(11) NOT NULL,
   `horario_comercial_ini` int(11) NOT NULL,
-  `horario_comercial_fin` int(11) NOT NULL
+  `horario_comercial_fin` int(11) NOT NULL,
+  `envio_variacao_percentual` int(11) NOT NULL DEFAULT 30,
+  `dkim_ativo` tinyint(1) NOT NULL DEFAULT 0,
+  `dkim_dominio` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `dkim_selector` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  `dkim_chave_privada` text COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -56,7 +63,9 @@ CREATE TABLE IF NOT EXISTS `contatos` (
   `telefone` varchar(12) COLLATE utf8mb4_bin NOT NULL,
   `grupo` varchar(200) COLLATE utf8mb4_bin NOT NULL,
   `aut` int(1) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_contatos_email` (`email`),
+  KEY `idx_contatos_grupo` (`grupo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- --------------------------------------------------------
@@ -91,7 +100,8 @@ CREATE TABLE IF NOT EXISTS `mensagens` (
   `data_atualizacao` datetime NULL DEFAULT NULL,
   `obs` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL,
   `url` text COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_mensagens_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -105,7 +115,10 @@ CREATE TABLE IF NOT EXISTS `restantes` (
   `mensagem` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
   `email` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
   `enviado` varchar(1) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
+  `erro_mensagem` varchar(500) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '',
+  PRIMARY KEY (`id`),
+  KEY `idx_restantes_mensagem_enviado` (`mensagem`, `enviado`),
+  KEY `idx_restantes_mensagem_email` (`mensagem`, `email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -139,7 +152,8 @@ CREATE TABLE IF NOT EXISTS `usuarios` (
   `senha` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `senha_email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `ativo` tinyint(1) NOT NULL DEFAULT 1,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_usuarios_email` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -154,5 +168,7 @@ CREATE TABLE IF NOT EXISTS `views` (
   `mensagem` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `data_hora` datetime NOT NULL,
   `link` varchar(200) COLLATE utf8mb4_unicode_ci NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `idx_views_mensagem` (`mensagem`),
+  KEY `idx_views_contato` (`contato`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

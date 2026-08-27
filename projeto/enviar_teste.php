@@ -108,12 +108,18 @@
 			$mail->MsgHTML($emailCompleto);
 			$mail->AddAddress($destinatario, "");
 
+			$arquivoDkimTemp = configurarDkim($mail, $dkimAtivo, $dkimDominio, $dkimSelector, $dkimChavePrivada, $envio);
+
 			$retorno = $mail->Send();
 
 		} catch (phpmailerException $e) {
 		  echo htmlspecialchars($e->errorMessage());
 		} catch (Exception $e) {
 		  echo htmlspecialchars($e->getMessage());
+		} finally {
+		  if(!empty($arquivoDkimTemp)){
+		  	@unlink($arquivoDkimTemp);
+		  }
 		}
 
 	}else{

@@ -146,78 +146,19 @@ function expulsaVisitante() {
 }
 
 /**
-* Criptografa a senha de envio de email (SMTP) para guardar no banco.
-* Usa AES-256-GCM com a chave APP_KEY (definida no .env). Se APP_KEY não
-* estiver configurada, devolve o valor em texto plano (comportamento antigo)
-* e registra um aviso no log do servidor - não quebra instalações que ainda
-* não migraram para o .env.
-*
-* @param string $senhaPlana
-* @return string Valor pronto para gravar na coluna senha_email
+* Token assinado (HMAC com a APP_KEY) que autoriza a continuação de um envio
+* em lote sem precisar de sessão de navegador - usado tanto pela auto-
+* recursão via curl em enviar.php quanto pelo watchdog em
+* cron/retomar_envios.php.
 */
-function criptografarSenhaEmail($senhaPlana){
+function tokenContinuacaoEnvio($idMensagem){
 	$chave = obterChaveApp();
-	if($chave === null){
-		trigger_error('APP_KEY não configurada - senha de envio será salva sem criptografia. Configure APP_KEY no .env.', E_USER_WARNING);
-		return $senhaPlana;
-	}
-
-	if($senhaPlana === ''){
-		return '';
-	}
-
-	$iv = random_bytes(12);
-	$tag = '';
-	$cifrado = openssl_encrypt($senhaPlana, 'aes-256-gcm', $chave, OPENSSL_RAW_DATA, $iv, $tag);
-
-	return base64_encode($iv . $tag . $cifrado);
+	return hash_hmac('sha256', 'continuar-envio:' . $idMensagem, $chave ?? 'sem-app-key-configurada');
 }
 
-/**
-* Descriptografa a senha de envio de email. Se o valor armazenado não for
-* um pacote cifrado válido (ex: registro antigo em texto plano, gravado
-* antes desta versão), devolve o valor como está - migração silenciosa,
-* igual à de senha de login.
-*
-* @param string $valorArmazenado
-* @return string Senha em texto plano, pronta para uso no PHPMailer
-*/
-function descriptografarSenhaEmail($valorArmazenado){
-	if($valorArmazenado === ''){
-		return '';
-	}
-
-	$chave = obterChaveApp();
-	if($chave === null){
-		return $valorArmazenado;
-	}
-
-	$binario = base64_decode($valorArmazenado, true);
-	// iv (12) + tag (16) + pelo menos 1 byte de conteúdo cifrado
-	if($binario === false || strlen($binario) <= 28){
-		return $valorArmazenado; // Não parece um pacote cifrado - trata como legado em texto plano
-	}
-
-	$iv = substr($binario, 0, 12);
-	$tag = substr($binario, 12, 16);
-	$cifrado = substr($binario, 28);
-
-	$decifrado = openssl_decrypt($cifrado, 'aes-256-gcm', $chave, OPENSSL_RAW_DATA, $iv, $tag);
-
-	// Falha de autenticação (chave errada ou não era realmente um pacote cifrado) -> assume texto plano legado
-	return $decifrado === false ? $valorArmazenado : $decifrado;
-}
-
-/**
-* Lê e decodifica a APP_KEY do ambiente (.env). Retorna null se ausente.
-*/
-function obterChaveApp(){
-	$chaveBase64 = getenv('APP_KEY');
-	if($chaveBase64 === false || $chaveBase64 === ''){
-		return null;
-	}
-
-	$chave = base64_decode($chaveBase64, true);
-	return ($chave === false || strlen($chave) < 32) ? null : $chave;
-}
+// As funções de criptografia (criptografarSegredo/descriptografarSegredo/
+// obterChaveApp) moraram aqui antes, mas foram movidas para libs/env.php -
+// libs/config.php precisa delas (pra descriptografar a chave DKIM) antes de
+// libs/seguranca.php ser incluído em qualquer página, e env.php já é
+// incluído bem no início de config.php.
 ?>

@@ -29,14 +29,21 @@
 		$novosEmailsPorHoraNaoComercial = (int) $_REQUEST['emails_por_hora_nao_comercial'];
 		$novoHorarioIni = (int) $_REQUEST['horario_comercial_ini'];
 		$novoHorarioFin = (int) $_REQUEST['horario_comercial_fin'];
+		$novaVariacao = (int) $_REQUEST['envio_variacao_percentual'];
+		$novoDkimAtivo = isset($_REQUEST['dkim_ativo']) ? 1 : 0;
+		$novoDkimDominio = trim($_REQUEST['dkim_dominio'] ?? '');
+		$novoDkimSelector = trim($_REQUEST['dkim_selector'] ?? '');
+		$novaDkimChave = trim($_REQUEST['dkim_chave_privada'] ?? '');
+		$novaDkimChaveCifrada = criptografarSegredo($novaDkimChave);
 
 		$rsSql = dbQuery(
 			$con,
-			"UPDATE config SET url=?, pasta=?, nome_empresa=?, smtp=?, porta=?, seguranca=?, autenticacao=?, email_resposta=?, nome_email_resposta=?, emails_por_hora=?, emails_por_hora_nao_comercial=?, horario_comercial_ini=?, horario_comercial_fin=?",
-			"ssssssissiiii",
+			"UPDATE config SET url=?, pasta=?, nome_empresa=?, smtp=?, porta=?, seguranca=?, autenticacao=?, email_resposta=?, nome_email_resposta=?, emails_por_hora=?, emails_por_hora_nao_comercial=?, horario_comercial_ini=?, horario_comercial_fin=?, envio_variacao_percentual=?, dkim_ativo=?, dkim_dominio=?, dkim_selector=?, dkim_chave_privada=?",
+			"ssssssissiiiiiisss",
 			$novaUrl, $novaPasta, $novoNomeEmpresa, $novoSmtp, $novaPorta, $novaSeguranca,
 			$novaAutenticacao, $novoEmailResposta, $novoNomeEmailResposta,
-			$novosEmailsPorHora, $novosEmailsPorHoraNaoComercial, $novoHorarioIni, $novoHorarioFin
+			$novosEmailsPorHora, $novosEmailsPorHoraNaoComercial, $novoHorarioIni, $novoHorarioFin,
+			$novaVariacao, $novoDkimAtivo, $novoDkimDominio, $novoDkimSelector, $novaDkimChaveCifrada
 		);
 		$msg = "Dados de Configuração foram Atualizados com Sucesso. Por favor, aguarde que até que a página seja recarregada automaticamente.";
 		echo "<meta http-equiv='refresh' content='5'>";
@@ -61,6 +68,11 @@
 		$cEmailsPorHoraNaoComercial = $row["emails_por_hora_nao_comercial"];
 		$cHorarioComercialIni = $row["horario_comercial_ini"];
 		$cHorarioComercialFin = $row["horario_comercial_fin"];
+		$cVariacao = $row["envio_variacao_percentual"] ?? 30;
+		$cDkimAtivo = !empty($row["dkim_ativo"] ?? false);
+		$cDkimDominio = $row["dkim_dominio"] ?? "";
+		$cDkimSelector = $row["dkim_selector"] ?? "";
+		$cDkimChave = isset($row["dkim_chave_privada"]) ? descriptografarSegredo($row["dkim_chave_privada"]) : "";
 	}
 ?>
 <div class="wrap grupos">
@@ -90,6 +102,18 @@
 				<input type="number" name="emails_por_hora_nao_comercial"  id="emails_por_hora_nao_comercial" placeholder="Emails Enviados por Hora Não Comercial" required="true" value="<?php echo (int) $cEmailsPorHoraNaoComercial;?>"  min="0" />
 				<input type="number" name="horario_comercial_ini"  id="horario_comercial_ini" placeholder="Início do Horário Comercial (Brasília)" required="true" value="<?php echo (int) $cHorarioComercialIni;?>" min="0" max="23"/>
 				<input type="number" name="horario_comercial_fin"  id="horario_comercial_fin" placeholder="Fim do Horário Comercial (Brasília)" required="true" value="<?php echo (int) $cHorarioComercialFin;?>"  min="0" max="23"/>
+
+				<h4>Anti-spam</h4>
+				<p class="mini-info">Variação aleatória (%) aplicada ao intervalo entre um email e outro, pra evitar um padrão perfeitamente constante entre os envios (reconhecido como comportamento de bot por provedores como Gmail/Outlook). Ex: 30 = cada envio varia entre 70% e 130% do intervalo calculado a partir de "Emails por Hora".</p>
+				<input type="number" name="envio_variacao_percentual" id="envio_variacao_percentual" placeholder="Variação Aleatória (%)" value="<?php echo (int) $cVariacao;?>" min="0" max="100"/>
+
+				<h4>DKIM (opcional)</h4>
+				<p class="mini-info">Assina os emails enviados com DKIM, aumentando a chance de não cair em spam. Totalmente opcional - deixe desativado se não tiver uma chave DKIM configurada no DNS do seu domínio.</p>
+				<label><input type="checkbox" name="dkim_ativo" id="dkim_ativo" value="1" <?php echo $cDkimAtivo ? 'checked' : ''; ?>/> Ativar assinatura DKIM</label>
+				<input type="text" name="dkim_dominio" id="dkim_dominio" placeholder="Domínio (ex: meudominio.com.br)" value="<?php echo htmlspecialchars($cDkimDominio); ?>"/>
+				<input type="text" name="dkim_selector" id="dkim_selector" placeholder="Selector (ex: default, mail, spmail)" value="<?php echo htmlspecialchars($cDkimSelector); ?>"/>
+				<textarea name="dkim_chave_privada" id="dkim_chave_privada" placeholder="Cole aqui a chave privada DKIM (formato PEM, -----BEGIN RSA PRIVATE KEY-----...)" rows="6"><?php echo htmlspecialchars($cDkimChave); ?></textarea>
+
 				<div class="botoes" >
 					<button type="submit">Salvar</button>
 				</div>

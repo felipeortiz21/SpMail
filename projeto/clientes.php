@@ -66,7 +66,7 @@
 		//SELECIONAR ITENS PARA PREENCHER A GRID
 		$rs = dbQuery(
 			$con,
-			"SELECT MIN(cont.id) as id, cont.email, MAX(cont.nome) as nome, MAX(cont.telefone) as telefone, cont.grupo, (SELECT titulo FROM grupos WHERE id = cont.grupo) AS titulo_grupo, MAX(cont.aut) as aut FROM contatos cont WHERE grupo=? GROUP BY cont.email, cont.grupo ORDER BY aut DESC",
+			"SELECT MIN(cont.id) as id, cont.email, MAX(cont.nome) as nome, MAX(cont.telefone) as telefone, cont.grupo, MAX(g.titulo) AS titulo_grupo, MAX(cont.aut) as aut FROM contatos cont LEFT JOIN grupos g ON g.id = cont.grupo WHERE cont.grupo=? GROUP BY cont.email, cont.grupo ORDER BY aut DESC",
 			"i",
 			$grupoSelecionado
 		);

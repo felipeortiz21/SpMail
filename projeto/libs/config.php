@@ -32,6 +32,12 @@
 		$emailsHoraNaoComercial = 0;
 		$horarioComercial_ini = 0;
 		$horarioComercial_fin = 0;
+		$envioVariacaoPercentual = 30; // variação aleatória (%) aplicada ao intervalo entre emails
+
+		$dkimAtivo = false;
+		$dkimDominio = "";
+		$dkimSelector = "";
+		$dkimChavePrivada = ""; // já descriptografada, pronta pra uso
 
 		// Credenciais do banco - vêm do .env (gerado pelo instalador). Os valores
 		// abaixo só são usados como fallback se o .env ainda não existir.
@@ -72,5 +78,12 @@
 			$emailsHoraNaoComercial = $rConfig["emails_por_hora_nao_comercial"];
 			$horarioComercial_ini = $rConfig["horario_comercial_ini"];
 			$horarioComercial_fin = $rConfig["horario_comercial_fin"];
+
+			// Campos novos (podem não existir ainda em bancos antigos até rodar o ALTER TABLE)
+			$envioVariacaoPercentual = (int) ($rConfig["envio_variacao_percentual"] ?? 30);
+			$dkimAtivo = !empty($rConfig["dkim_ativo"] ?? false);
+			$dkimDominio = $rConfig["dkim_dominio"] ?? "";
+			$dkimSelector = $rConfig["dkim_selector"] ?? "";
+			$dkimChavePrivada = isset($rConfig["dkim_chave_privada"]) ? descriptografarSegredo($rConfig["dkim_chave_privada"]) : "";
 		}
 	?>

@@ -16,11 +16,8 @@
 	include_once("libs/seguranca.php");
 	include_once("libs/db.php");
 	include_once("libs/template.php");
-
-	function tokenContinuacaoEnvio($idMensagem){
-		$chave = obterChaveApp();
-		return hash_hmac('sha256', 'continuar-envio:' . $idMensagem, $chave ?? 'sem-app-key-configurada');
-	}
+	// tokenContinuacaoEnvio() mora em libs/seguranca.php (usada também pelo
+	// watchdog em cron/retomar_envios.php, que não tem sessão de navegador).
 
 	$tokenRecebido = $_REQUEST['token'] ?? '';
 	$tokenValido = isset($_REQUEST['id']) && hash_equals(tokenContinuacaoEnvio($_REQUEST['id']), $tokenRecebido);
@@ -247,15 +244,24 @@
 					$mail->MsgHTML($emailCompleto);
 					$mail->AddAddress($emailDestino, "");
 
+					$arquivoDkimTemp = configurarDkim($mail, $dkimAtivo, $dkimDominio, $dkimSelector, $dkimChavePrivada, $envio);
+
 					$retorno = $mail->Send();
+
+					if($arquivoDkimTemp){
+						@unlink($arquivoDkimTemp);
+					}
 				}else{
 					$retorno = @mail($emailDestino, $assuntoPersonalizado, $emailCompleto, $headers);
 				}
 
 				if($retorno){
-					dbQuery($con, "UPDATE restantes SET enviado='1' WHERE mensagem=? AND email=?", "is", $id, $emailDestino);
+					dbQuery($con, "UPDATE restantes SET enviado='1', erro_mensagem='' WHERE mensagem=? AND email=?", "is", $id, $emailDestino);
 				}else{
-					dbQuery($con, "UPDATE restantes SET enviado='2' WHERE mensagem=? AND email=?", "is", $id, $emailDestino);
+					// Guarda o motivo do erro (do PHPMailer, quando disponível) pra dar
+					// pra diagnosticar falhas em massa sem precisar vasculhar log de servidor.
+					$motivoErro = isset($mail) && !empty($mail->ErrorInfo) ? substr($mail->ErrorInfo, 0, 500) : 'Falha desconhecida ao enviar';
+					dbQuery($con, "UPDATE restantes SET enviado='2', erro_mensagem=? WHERE mensagem=? AND email=?", "sis", $motivoErro, $id, $emailDestino);
 				}
 			}
         }
@@ -299,11 +305,13 @@
 
 	if(count($arrEmail) != 0){
 		$local = $caminhoURL."enviar.php?id=".$id."&acao=".$acao."&continuar=1&token=".tokenContinuacaoEnvio($id);
-		$segundos= 60/($emailsHora/60);
+		$segundos = calcularSegundosEntreEnvios($emailsHora);
 		if($continuar):?>
 			<h1>Envios Retomados</h1>
 		<?php
-			sleep(round($segundos)); // 30 = 2 emails por minuto
+			// Variação aleatória (jitter) em torno do intervalo configurado,
+			// pra não ter um padrão perfeitamente constante entre os envios.
+			sleep(aplicarVariacaoAleatoria($segundos, $envioVariacaoPercentual));
 		endif;
 		$local_escapado = escapeshellarg($local);
 		$exec = exec("curl --request GET $local_escapado > /dev/null 2>/dev/null &"); //Executar de forma de assínscrona e em background

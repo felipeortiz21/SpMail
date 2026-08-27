@@ -277,6 +277,35 @@ find "$APP_DIR" -type f -exec chmod 644 {} \;
 ok "Permissões ajustadas para o usuário '${WEB_USER}'."
 
 # --------------------------------------------------------------------------
+# Watchdog de retomada automática de envios travados (cron)
+# --------------------------------------------------------------------------
+passo "Configurando retomada automática de envios travados"
+
+if ! command -v crontab >/dev/null 2>&1; then
+	if confirmar "cron não encontrado. Instalar agora (necessário pra retomar envios travados sozinho)?"; then
+		apt-get update -y
+		apt-get install -y cron
+		systemctl enable --now cron
+		ok "cron instalado."
+	fi
+fi
+
+if command -v crontab >/dev/null 2>&1; then
+	CRON_LINHA="*/2 * * * * php ${APP_DIR}/cron/retomar_envios.php >/dev/null 2>&1"
+	if confirmar "Adicionar tarefa cron (a cada 2 minutos) que retoma sozinha uma campanha travada, sem precisar de clique manual em 'Continuar Envios'?"; then
+		CRON_ATUAL="$(crontab -u "$WEB_USER" -l 2>/dev/null || true)"
+		if echo "$CRON_ATUAL" | grep -qF "retomar_envios.php"; then
+			aviso "Já existe uma tarefa cron para retomar_envios.php - não duplicando."
+		else
+			{ echo "$CRON_ATUAL"; echo "$CRON_LINHA"; } | crontab -u "$WEB_USER" -
+			ok "Tarefa cron adicionada para o usuário '${WEB_USER}'."
+		fi
+	else
+		aviso "Pulado. Campanhas travadas vão exigir clique manual em 'Continuar Envios'. Pra adicionar depois: ${CRON_LINHA}"
+	fi
+fi
+
+# --------------------------------------------------------------------------
 # Finalização
 # --------------------------------------------------------------------------
 passo "Instalação de servidor concluída"

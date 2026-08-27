@@ -29,16 +29,19 @@ if(isset($_REQUEST["url"])){
 	$cEmailsPorHoraNaoComercial = (int) $_REQUEST['emails_por_hora_nao_comercial'];
 	$cHorarioComercialIni = (int) $_REQUEST['horario_comercial_ini'];
 	$cHorarioComercialFin = (int) $_REQUEST['horario_comercial_fin'];
+	$cVariacao = (int) ($_REQUEST['envio_variacao_percentual'] ?? 30);
 
 	dbQuery($con, "TRUNCATE config;");
 
+	// DKIM começa desativado - é totalmente opcional e pode ser configurado
+	// depois em Configurações, quando/se o domínio tiver uma chave DKIM pronta.
 	$rsSql = dbQuery(
 		$con,
-		"INSERT INTO config VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)",
-		"ssssssississi",
+		"INSERT INTO config VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,0,'','','')",
+		"ssssssissiiiii",
 		$cUrl, $cPasta, $cNomeEmpresa, $cSmtp, $cPorta, $cSeguranca, $cAutenticacao,
 		$cEmailResposta, $cNomeEmailResposta, $cEmailsPorHora, $cEmailsPorHoraNaoComercial,
-		$cHorarioComercialIni, $cHorarioComercialFin
+		$cHorarioComercialIni, $cHorarioComercialFin, $cVariacao
 	);
 
 	if($rsSql){
@@ -135,6 +138,10 @@ if(isset($_REQUEST["url"])){
 				<div>
 					<p class="mini-info">Digite a hora que é finalizado o horário comercial na sua empresa ou instituição. Considere APENAS a hora, em formato de 0 a 23 horas.</p>
 					<input type="number" name="horario_comercial_fin" placeholder="Apenas Números" autocomplete="off" value="18" min="0" max="23"/>
+				</div>
+				<div>
+					<p class="mini-info">Variação aleatória (%) no intervalo entre um email e outro, pra não ter um padrão perfeitamente constante (evita parecer comportamento de bot pra provedores como Gmail/Outlook). Pode ajustar depois em Configurações.</p>
+					<input type="number" name="envio_variacao_percentual" placeholder="Apenas Números" autocomplete="off" value="30" min="0" max="100"/>
 				</div>
 				<button type="submit">Próximo Passo</button>
 			</form>
