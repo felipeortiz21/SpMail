@@ -72,13 +72,13 @@ if(isset($_REQUEST["url"])){
 					<input type="text" name="url" placeholder="https://meusite.com.br" value="https://<?php echo $_SERVER['HTTP_HOST']; ?>" autocomplete="off" required/>
 				</div>
 				<div>
-					<p class="mini-info">Preencha com o nome da pasta onde você enviou os arquivos do SpMail</p>
+					<p class="mini-info">Se o SpMail estiver instalado direto na raiz do domínio (sem subpasta - o mais comum), deixe este campo em branco. Preencha só se ele estiver dentro de uma subpasta, ex: "mailing" em https://meusite.com.br/mailing/</p>
 					<?php
 						$uri = $_SERVER['REQUEST_URI'];
 						$uri = str_replace("/instalador/passo2.php","",$uri);
 						$uri = ltrim($uri, '/');
 					?>
-					<input type="text" name="pasta" placeholder="mailing" autocomplete="off" value="<?php echo htmlspecialchars($uri); ?>" required/>
+					<input type="text" name="pasta" placeholder="(deixe em branco se não usar subpasta)" autocomplete="off" value="<?php echo htmlspecialchars($uri); ?>"/>
 				</div>
 				<div>
 					<p class="mini-info">Digite o nome da Empresa ou Instituição que usará o SpMail</p>
