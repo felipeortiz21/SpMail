@@ -72,7 +72,7 @@
 		$cDkimAtivo = !empty($row["dkim_ativo"] ?? false);
 		$cDkimDominio = $row["dkim_dominio"] ?? "";
 		$cDkimSelector = $row["dkim_selector"] ?? "";
-		$cDkimChave = isset($row["dkim_chave_privada"]) ? descriptografarSegredo($row["dkim_chave_privada"]) : "";
+		$cDkimChave = !empty($row["dkim_chave_privada"]) ? descriptografarSegredo($row["dkim_chave_privada"]) : "";
 	}
 ?>
 <div class="wrap grupos">

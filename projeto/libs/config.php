@@ -84,6 +84,6 @@
 			$dkimAtivo = !empty($rConfig["dkim_ativo"] ?? false);
 			$dkimDominio = $rConfig["dkim_dominio"] ?? "";
 			$dkimSelector = $rConfig["dkim_selector"] ?? "";
-			$dkimChavePrivada = isset($rConfig["dkim_chave_privada"]) ? descriptografarSegredo($rConfig["dkim_chave_privada"]) : "";
+			$dkimChavePrivada = !empty($rConfig["dkim_chave_privada"]) ? descriptografarSegredo($rConfig["dkim_chave_privada"]) : "";
 		}
 	?>
