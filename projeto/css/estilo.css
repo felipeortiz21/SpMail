@@ -180,6 +180,13 @@ button, [type=submit], [type=button]{
 	font-weight: 600;
 }
 
+/* .botoes só tem filhos float:right (os botões) - sem isso, o container
+   colapsa pra altura zero e o próximo elemento do formulário (título,
+   alerta, etc) sobe e fica sobreposto aos botões flutuantes. */
+div.botoes{
+	display: flow-root;
+}
+
 div.botoes button {
     margin-bottom: .5em;
     padding: .6em 1.2em;
@@ -395,7 +402,8 @@ input[disabled=true],input[name=id]{
    -------------------------------------------------------------------- */
 
 .login{
-	width: 320px;
+	width: 90%;
+	max-width: 400px;
 	margin: 0 auto;
 	margin-top: 8%;
 	padding: 2.5em 2em;

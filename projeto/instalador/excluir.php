@@ -35,7 +35,7 @@ if(isset($_REQUEST["excluir"])){
 	<body>
 		<div class="login" style="width:80%; max-width:700px; margin-top:10px;">
 			<center>
-				<img style="max-width:250px;" src="../assets/logo_maior.png"/>
+				<img style="max-width:250px;" src="../assets/logo_maior.svg"/>
 			</center>
 			<h1>Está Tudo Completo! Obrigado por instalar o SpMail.</h1>
 			<p>Para sua segurança, a pasta do instalador será automaticamente excluída e você será encaminhado para a tela de login.</p>

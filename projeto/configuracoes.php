@@ -122,7 +122,7 @@
 		$cLogoPath = $row["logo_path"] ?? "";
 	}
 
-	$logoAtualUrl = $cLogoPath !== "" ? $caminhoURL.$cLogoPath : $caminhoURL."assets/simbolo.png";
+	$logoAtualUrl = $cLogoPath !== "" ? $caminhoURL.$cLogoPath : $caminhoURL."assets/simbolo.svg";
 ?>
 <div class="wrap">
 	<h1>Configurações do Sistema</h1>

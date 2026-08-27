@@ -23,12 +23,12 @@
         <title>Instalador SpMail</title>
         <meta name="description" content="Gerenciador de Mailmarketing">
         <meta name="robots" content="no-index" />
-        <link rel="icon" type="image/png" href="../assets/simbolo.png" />
+        <link rel="icon" type="image/svg+xml" href="../assets/simbolo.svg" />
 	</head>
 	<body>
 		<div class="login instalador">
 			<center>
-				<img src="../assets/logo_maior.png"/>
+				<img src="../assets/logo_maior.svg"/>
 			</center>
 			<h1>Bem Vindo ao Instalador do SpMail</h1>
 			<h2>Para prosseguir, preencha os dados do Banco.</h2>

@@ -67,12 +67,12 @@ if(isset($_REQUEST["nome"])){
         <title>Instalador SpMail</title>
         <meta name="description" content="Gerenciador de Mailmarketing">
         <meta name="robots" content="no-index" />
-        <link rel="icon" type="image/png" href="../assets/simbolo.png" />
+        <link rel="icon" type="image/svg+xml" href="../assets/simbolo.svg" />
 	</head>
 	<body>
 		<div class="login instalador">
 			<center>
-				<img src="../assets/logo_maior.png"/>
+				<img src="../assets/logo_maior.svg"/>
 			</center>
 			<h1>Está Quase Pronto :D</h1>
 			<h2>Cadastre o primeiro usuário administrador!</h2>

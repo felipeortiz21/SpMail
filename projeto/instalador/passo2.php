@@ -66,12 +66,12 @@ if(isset($_REQUEST["url"])){
         <title>Instalador SpMail</title>
         <meta name="description" content="Gerenciador de Mailmarketing">
         <meta name="robots" content="no-index" />
-        <link rel="icon" type="image/png" href="../assets/simbolo.png" />
+        <link rel="icon" type="image/svg+xml" href="../assets/simbolo.svg" />
 	</head>
 	<body>
 		<div class="login instalador">
 			<center>
-				<img src="../assets/logo_maior.png"/>
+				<img src="../assets/logo_maior.svg"/>
 			</center>
 			<h1>Banco Criado com Sucesso!</h1>
 			<h2>Agora, por favor, preencha as informações básicas para a operação do SpMail.</h2>

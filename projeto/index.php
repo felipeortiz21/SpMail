@@ -32,7 +32,7 @@ if(isset($_REQUEST["nome"]) && isset($_REQUEST["senha"])){
 
 }
 
-$logoLogin = !empty($logoPath) ? $caminhoURL.$logoPath : $caminhoURL."assets/logo_maior.png";
+$logoLogin = !empty($logoPath) ? $caminhoURL.$logoPath : $caminhoURL."assets/logo_maior.svg";
 
 ?>
 
@@ -47,7 +47,7 @@ $logoLogin = !empty($logoPath) ? $caminhoURL.$logoPath : $caminhoURL."assets/log
 		<title>SpMail - Login</title>
 		<link rel="stylesheet" href="css/pico.classless.min.css">
 		<link rel="stylesheet" href="css/estilo.css">
-		<link rel="icon" type="image/png" href="assets/simbolo.png" />
+		<link rel="icon" type="image/svg+xml" href="assets/simbolo.svg" />
 	</head>
 	<body>
 		<div class="login">

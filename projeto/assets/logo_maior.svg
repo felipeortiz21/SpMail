@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 300" width="320" height="300" role="img" aria-label="SpMail">
+	<defs>
+		<linearGradient id="fundo" x1="0" y1="0" x2="1" y2="1">
+			<stop offset="0" stop-color="#1955c7"/>
+			<stop offset="1" stop-color="#0f2f57"/>
+		</linearGradient>
+	</defs>
+	<rect x="90" y="30" width="140" height="140" rx="32" fill="url(#fundo)"/>
+	<g transform="translate(160,100) scale(3.8) translate(-12,-12)">
+		<polygon points="22 2 15 22 11 13 2 9 22 2" fill="#ffffff"/>
+		<line x1="22" y1="2" x2="11" y2="13" stroke="#1955c7" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+	</g>
+	<text x="160" y="270" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-weight="700" font-size="56" fill="#1955c7">SpMail</text>
+</svg>

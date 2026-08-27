@@ -19,7 +19,7 @@
 		exit;
 	}
 	$ehAdminGeral = isset($_SESSION['usuarioPapel']) && $_SESSION['usuarioPapel'] === 'Administrador Geral';
-	$logoTopo = !empty($logoPath) ? $caminhoURL.$logoPath : $caminhoURL."assets/simbolo.png";
+	$logoTopo = !empty($logoPath) ? $caminhoURL.$logoPath : $caminhoURL."assets/simbolo.svg";
 	?>
 <!DOCTYPE html>
 <html lang="pt_br" data-theme="light">
@@ -40,7 +40,7 @@
         <title>SpMail - <?php echo htmlspecialchars($nomeEmpresa); ?></title>
         <meta name="description" content="Gerenciador de Mailmarketing">
         <meta name="robots" content="no-index" />
-        <link rel="icon" type="image/png" href="assets/simbolo.png" />
+        <link rel="icon" type="image/svg+xml" href="assets/simbolo.svg" />
 	</head>
 	<body>
 		<header class="cabecalho">
