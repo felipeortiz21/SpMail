@@ -71,7 +71,7 @@
 			<form method="post" action="configuracoes.php" id="formulario">
 				<input type="hidden" name="acao" id="acao" value="1"  />
 				<input type="text" name="url"  id="url" placeholder="https://DigiteSeuSite.com.br" required="true" value="<?php echo htmlspecialchars($cUrl); ?>"/>
-				<input type="text" name="pasta"  id="pasta" placeholder="Pasta onde está instalado o SpMail" required="true" value="<?php echo htmlspecialchars($cPasta); ?>"/>
+				<input type="text" name="pasta"  id="pasta" placeholder="Deixe em branco se não usar subpasta" value="<?php echo htmlspecialchars($cPasta); ?>"/>
 				<input type="text" name="nome_empresa"  id="nome_empresa" placeholder="Nome da Empresa" required="true" value="<?php echo htmlspecialchars($cNomeEmpresa);?>"/>
 				<input type="text" name="smtp"  id="smtp" placeholder="Endereço STMP" required="true" value="<?php echo htmlspecialchars($cSmtp);?>"/>
 				<input type="text" name="porta"  id="porta" placeholder="Porta STMP" required="true" value="<?php echo htmlspecialchars($cPorta) ;?>"/>
