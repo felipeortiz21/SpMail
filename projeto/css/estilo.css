@@ -175,10 +175,6 @@ input,textarea,select{
 	margin-bottom: .9em;
 }
 
-select{
-	width: auto;
-}
-
 button, [type=submit], [type=button]{
 	letter-spacing: .2px;
 	font-weight: 600;
@@ -564,6 +560,7 @@ div.confirma .enviarEmail .area_mensagem,.resumo{
 }
 
 .variaveis select{
+	width: auto;
 	margin-bottom: 0;
 	font-size: .85em;
 }
@@ -667,6 +664,7 @@ details.secao .secao-corpo{
 }
 
 .seletor-campanha select{
+	width: auto;
 	min-width: 320px;
 	margin-bottom: 0;
 }
@@ -678,6 +676,12 @@ details.secao .secao-corpo{
 .filtro{
 	padding: .5em 0;
 	font-size: .85em;
+}
+
+.filtro select{
+	width: auto;
+	margin-bottom: 0;
+	margin-left: .5em;
 }
 
 .instrucoes .pre{
