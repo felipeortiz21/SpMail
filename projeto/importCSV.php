@@ -16,12 +16,18 @@
 	}
 	$grupo = (int) ($_REQUEST['grupo'] ?? 0);
 
+	const CSV_TAMANHO_MAXIMO = 5 * 1024 * 1024; // 5MB
+
   	//Upload File
 	if (isset($_FILES['arquivoCSV'])) {
-		if (is_uploaded_file($_FILES['arquivoCSV']['tmp_name'])) {
-			echo ("O arquivo foi enviado com sucesso.<br/>");
-		}else{
-			die ("Arquivo Não Pôde Ser Enviado ao Servidor.");
+		if($_FILES['arquivoCSV']['error'] !== UPLOAD_ERR_OK){
+			die("<div class='resultado-import'><span class='falha'>Não foi possível receber o arquivo.</span></div>");
+		}
+		if($_FILES['arquivoCSV']['size'] > CSV_TAMANHO_MAXIMO){
+			die("<div class='resultado-import'><span class='falha'>Arquivo maior que 5MB - divida em arquivos menores.</span></div>");
+		}
+		if (!is_uploaded_file($_FILES['arquivoCSV']['tmp_name'])) {
+			die("<div class='resultado-import'><span class='falha'>Arquivo não pôde ser enviado ao servidor.</span></div>");
 		}
 
 		//Import uploaded file to Database
@@ -29,17 +35,22 @@
 
 		$total = 0;
 		$sucesso = 0;
-		$erros = 0;
 		$repetidos = 0;
+		$invalidos = 0;
+		$falhas = 0;
 
 		while (($data = fgetcsv($handle, 1000, ";")) !== FALSE) {
 			$email = trim($data[0] ?? '');
 			$nome = trim($data[1] ?? '');
 			$telefone = trim($data[2] ?? '');
 
-			if($email === ''){
-				$erros++;
-				$total++;
+			if($email === '' && $nome === '' && $telefone === ''){
+				continue; // linha em branco - não conta nem como erro
+			}
+			$total++;
+
+			if(filter_var($email, FILTER_VALIDATE_EMAIL) === false){
+				$invalidos++;
 				continue;
 			}
 
@@ -49,31 +60,28 @@
 				if($result){
 					$sucesso ++;
 				}else{
-					$erros++;
+					$falhas++;
 				}
 			}else{
-				$erros++;
 				$repetidos++;
 			}
-
-			$total ++;
 		}
-
-		echo "Importação finalizada com:<br/> " ;
-		if($sucesso > 0){
-			echo $sucesso ." sucessos; <br/>";
-		}
-		if($erros > 0){
-			echo $erros .  " erros";
-			if($repetidos >0){
-				echo ", sendo que " . $repetidos . " foram causados por emails repetidos";
-			}
-			echo ".<br/>";
-		}
-
 		fclose($handle);
-		//view upload form
+
+		echo "<div class='resultado-import'>";
+		echo "<p><b>Importação finalizada</b> - {$total} linha(s) processada(s)</p>";
+		echo "<p><span class='ok'>{$sucesso} importado(s) com sucesso</span></p>";
+		if($repetidos > 0){
+			echo "<p>{$repetidos} já cadastrado(s) neste grupo (ignorado(s))</p>";
+		}
+		if($invalidos > 0){
+			echo "<p><span class='falha'>{$invalidos} com email em formato inválido (ignorado(s))</span></p>";
+		}
+		if($falhas > 0){
+			echo "<p><span class='falha'>{$falhas} falharam ao gravar no banco</span></p>";
+		}
+		echo "</div>";
 	}else {
-		echo "Erro na Importação";
+		echo "<div class='resultado-import'><span class='falha'>Nenhum arquivo recebido.</span></div>";
 	}
 ?>

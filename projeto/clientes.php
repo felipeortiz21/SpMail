@@ -9,6 +9,7 @@
 	include "header.php";
 	include "libs/seguranca.php";
 	include_once "libs/db.php";
+	include_once "libs/icones.php";
 	include "functions.php";
 	protegePagina();
 ?>
@@ -199,8 +200,8 @@
 						<td rel="telefone"><?php echo htmlspecialchars($row['telefone'])?></td>
 						<td rel="grupo" id="<?php echo (int) $row['grupo']?>"><?php echo htmlspecialchars($row['titulo_grupo'])?></td>
 						<td>
-							<img onclick="editar(event)" src="<?php echo $caminhoURL; ?>assets/editar.png" title="Editar Contato"/>
-							<img src="<?php echo $caminhoURL; ?>assets/delete.png" title="Exluir Contato" onclick="excluir(<?php echo (int) $row['id']?>,'<?php echo htmlspecialchars($row['email'], ENT_QUOTES)?>',<?php echo (int) $row['grupo']?>)"/>
+							<?php echo icone('editar', 'Editar Contato', '', 'onclick="editar(event)"'); ?>
+							<?php echo icone('excluir', 'Excluir Contato', 'icone-excluir', 'onclick="excluir('.(int) $row['id'].',\''.htmlspecialchars($row['email'], ENT_QUOTES).'\','.(int) $row['grupo'].')"'); ?>
 						</td>
 					</tr>
 					<?php
@@ -251,8 +252,11 @@
 	}
 
 	$("#formCSV").submit(function(){
+		var arquivo = $("#arquivoCSV")[0].files[0];
 		if($("#grupoImportacao").val() == 0 || $("#arquivoCSV").val() == ''){
 			alert("Selecione um Grupo e um Arquivo para Prosseguir");
+		}else if(arquivo && arquivo.size > 5 * 1024 * 1024){
+			alert("Arquivo maior que 5MB - divida em arquivos menores.");
 		}else{
 			var formData = new FormData(this);
 			formData.set("grupo", $("#grupoImportacao").val());

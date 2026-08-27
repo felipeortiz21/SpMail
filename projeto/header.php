@@ -19,11 +19,17 @@
 		exit;
 	}
 	$ehAdminGeral = isset($_SESSION['usuarioPapel']) && $_SESSION['usuarioPapel'] === 'Administrador Geral';
+	$logoTopo = !empty($logoPath) ? $caminhoURL.$logoPath : $caminhoURL."assets/simbolo.png";
 	?>
 <!DOCTYPE html>
-<html lang="pt_br">
+<html lang="pt_br" data-theme="light">
 	<head>
 	    <meta charset="utf-8">
+	    <meta name="viewport" content="width=device-width, initial-scale=1">
+	    <link rel="preconnect" href="https://fonts.googleapis.com">
+	    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+		<link rel="stylesheet" href="<?php echo $caminhoURL; ?>css/pico.classless.min.css">
 		<link rel="stylesheet" href="<?php echo $caminhoURL; ?>css/estilo.css">
         <link rel="stylesheet" href="https://tinymce.cachefly.net/4.2/skins/lightgray/skin.min.css">
 		<script src="<?php echo $caminhoURL; ?>js/advanced.js"></script>
@@ -39,13 +45,13 @@
 	<body>
 		<header class="cabecalho">
 			<center>
-				<img src="<?php echo $caminhoURL; ?>assets/simbolo.png"/>
+				<img src="<?php echo htmlspecialchars($logoTopo); ?>" alt="<?php echo htmlspecialchars($nomeEmpresa); ?>"/>
 				<h1><?php echo htmlspecialchars($nomeEmpresa); ?></h1>
 			</center>
 			<div class="menu">
 			<nav>
 				<ul>
-					<li><a href="<?php echo $caminhoURL; ?>dashboard.php">DASHBOARD</a></li>
+					<li><a href="<?php echo $caminhoURL; ?>dashboard.php">Dashboard</a></li>
 					<li><a href="<?php echo $caminhoURL; ?>email.php">Novo Email</a></li>
 					<li><a href="<?php echo $caminhoURL; ?>emails.php">Emails Enviados</a></li>
 					<li><a href="<?php echo $caminhoURL; ?>grupos.php">Grupos</a></li>

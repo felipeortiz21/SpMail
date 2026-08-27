@@ -10,6 +10,7 @@
 	include "libs/seguranca.php";
 	include_once "libs/db.php";
 	include_once "libs/template.php";
+	include_once "libs/icones.php";
 	protegePagina();
 
 	date_default_timezone_set('America/Sao_Paulo');
@@ -112,6 +113,21 @@ if(isset($_REQUEST["id_men"])){
 			}
 		</style>
 		<h1>Dashboard</h1>
+		<form class="seletor-campanha" method="get" action="dashboard.php">
+			<label for="id_men">Campanha:</label>
+			<select name="id_men" id="id_men" onchange="this.form.submit()">
+				<?php
+					$rsCampanhas = dbQuery($con, "SELECT id, assunto, data_envio_ini FROM mensagens ORDER BY id DESC", "");
+					while($rowCampanha = mysqli_fetch_array($rsCampanhas)):
+						$rotulo = '#'.$rowCampanha['id'].' - '.$rowCampanha['assunto'];
+						if($rowCampanha['data_envio_ini']){
+							$rotulo .= ' ('.date('d/m/Y', strtotime($rowCampanha['data_envio_ini'])).')';
+						}
+				?>
+				<option value="<?php echo (int) $rowCampanha['id']; ?>" <?php echo ((int) $rowCampanha['id'] === (int) $id_mensagem) ? 'selected' : ''; ?>><?php echo htmlspecialchars($rotulo); ?></option>
+				<?php endwhile; ?>
+			</select>
+		</form>
 		<script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
 		<?php
 			$mRs = dbQuery($con, "SELECT * FROM mensagens WHERE id=?", "i", $id_mensagem);
@@ -121,16 +137,16 @@ if(isset($_REQUEST["id_men"])){
 				<div class="tabela">
 					<h2><a target="_blank" href="emails/<?php echo htmlspecialchars($mRow['url'])?>.html" title="Visualizar Email"><?php echo (int) $mRow["id"]; ?> - <?php echo htmlspecialchars($mRow["assunto"]); ?><?php
 					if($mRow['status'] == 0){
-						$status = '<img src="'.$caminhoURL.'assets/alerta.png" title="Não Enviado"/>';
+						$status = icone('alerta', 'Não Enviado');
 						$class = 'nao_enviado';
 					}else if($mRow['status'] == 1){
-						$status = '<img src="'.$caminhoURL.'assets/enviando.png" title="Ainda Enviando"/>';
+						$status = icone('enviando', 'Ainda Enviando');
 						$class = 'enviando';
 					}else if($mRow['status'] == 2){
-						$status = '<img src="'.$caminhoURL.'assets/enviado.png" title="Emails Enviados Com Sucesso"/>';
+						$status = icone('enviado', 'Emails Enviados Com Sucesso');
 						$class = 'enviado';
 					}else if($mRow['status'] == 3){
-						$status = '<img src="'.$caminhoURL.'assets/alerta.png" title="Erro ao Enviar"/>';
+						$status = icone('alerta', 'Erro ao Enviar');
 						$class = 'erro';
 					}
 
@@ -145,7 +161,7 @@ if(isset($_REQUEST["id_men"])){
 
 						if($proxAtualizacao < $agora){
 							$processoInterrompido = true;
-							$status = '<img src="'.$caminhoURL.'assets/alerta.png" title="Envio dos Interrompidos pelo Servidor. Clique em Continuar Envios para prosseguir."/>';
+							$status = icone('alerta', 'Envio Interrompido pelo Servidor. Clique em Continuar Envios para prosseguir.');
 							$class = "erro";
 						}
 					}

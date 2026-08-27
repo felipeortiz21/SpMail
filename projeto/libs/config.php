@@ -16,6 +16,7 @@
 		$pastaURL = "";
 		$caminhoURL = "";
 		$nomeEmpresa = "";
+		$logoPath = "";
 
 		//Caso use SMTP, coloque como true, caso contrário, usará a função mail nativa. O SMTP é provido pelo projeto PHPMAiler: https://github.com/PHPMailer/PHPMailer
 		$usarSMTP = true;
@@ -87,5 +88,6 @@
 			$dkimDominio = $rConfig["dkim_dominio"] ?? "";
 			$dkimSelector = $rConfig["dkim_selector"] ?? "";
 			$dkimChavePrivada = !empty($rConfig["dkim_chave_privada"]) ? descriptografarSegredo($rConfig["dkim_chave_privada"]) : "";
+			$logoPath = $rConfig["logo_path"] ?? ""; // caminho relativo (a partir de $caminhoURL) da logo customizada (whitelabel), vazio = usa a padrão
 		}
 	?>

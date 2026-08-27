@@ -10,6 +10,7 @@
 	include "libs/seguranca.php";
 	include_once "libs/db.php";
 	include_once "libs/template.php";
+	include_once "libs/icones.php";
 	protegePagina();
 
 	date_default_timezone_set('America/Sao_Paulo');
@@ -65,16 +66,16 @@
 					while($row = mysqli_fetch_array($rs)):
 
 					if($row['status'] == 0){
-						$status = '<img src="'.$caminhoURL.'assets/alerta.png" title="Não Enviado"/>';
+						$status = icone('alerta', 'Não Enviado');
 						$class = 'nao_enviado';
 					}else if($row['status'] == 1){
-						$status = '<img src="'.$caminhoURL.'assets/enviando.png" title="Ainda Enviando"/>';
+						$status = icone('enviando', 'Ainda Enviando');
 						$class = 'enviando';
 					}else if($row['status'] == 2){
-						$status = '<img src="'.$caminhoURL.'assets/enviado.png" title="Emails Enviados Com Sucesso"/>';
+						$status = icone('enviado', 'Emails Enviados Com Sucesso');
 						$class = 'enviado';
 					}else if($row['status'] == 3){
-						$status = '<img src="'.$caminhoURL.'assets/alerta.png" title="Erro ao Enviar"/>';
+						$status = icone('alerta', 'Erro ao Enviar');
 						$class = 'erro';
 					}
 
@@ -90,7 +91,7 @@
 
 						if($proxAtualizacao < $agora){
 							$processoInterrompido = true;
-							$status = '<img src="'.$caminhoURL.'assets/alerta.png" title="Envio dos Interrompidos pelo Servidor. Clique em Continuar Envios para prosseguir."/>';
+							$status = icone('alerta', 'Envio Interrompido pelo Servidor. Clique em Continuar Envios para prosseguir.');
 							$class = "erro";
 						}
 					}
@@ -120,9 +121,9 @@
 							<a href="enviar.php?id=<?php echo (int) $row['id']?>&acao=1&continuar=1" class="ajax"><b>Continuar Envios</b>&nbsp;</a>
 						<?php endif;?>
 
-						<a href="subtelas/dashboard.php?mensagem=<?php echo (int) $row['id']?>" class="ajax"><img src="<?php echo $caminhoURL; ?>assets/chart.png" title="Editar Email"/>&nbsp;</a>
-						<a onClick="reeditar(<?php echo (int) $row['id']?>)" href="#"><img src="<?php echo $caminhoURL; ?>assets/editar.png" title="Editar Email"/>&nbsp;</a>
-						<a onClick="deletar(<?php echo (int) $row['id']?>)" href="#"><img src="<?php echo $caminhoURL; ?>assets/delete.png" title="Excluir Mensagem"/></a>
+						<a href="subtelas/dashboard.php?mensagem=<?php echo (int) $row['id']?>" class="ajax"><?php echo icone('grafico', 'Ver Estatísticas'); ?>&nbsp;</a>
+						<a onClick="reeditar(<?php echo (int) $row['id']?>)" href="#"><?php echo icone('editar', 'Editar Email'); ?>&nbsp;</a>
+						<a onClick="deletar(<?php echo (int) $row['id']?>)" href="#"><?php echo icone('excluir', 'Excluir Mensagem', 'icone-excluir'); ?></a>
 					</td>
 				</tr>
 				<?php

@@ -9,6 +9,7 @@
 	include "header.php";
 	include "libs/seguranca.php";
 	include_once "libs/db.php";
+	include_once "libs/icones.php";
 	include "functions.php";
 	protegePaginaAdmin();
 ?>
@@ -118,8 +119,8 @@
 				<td rel="setores"><?php echo $row['setores'] === PAPEL_ADMIN_GERAL ? 'Administrador Geral' : 'Usuário'; ?></td>
 				<td rel="ativo"><?php echo ((int) $row['ativo']) === 1 ? 'Sim' : 'Não'; ?></td>
 				<td>
-					<img onclick="editar(event)" src="<?php echo $caminhoURL; ?>assets/editar.png" title="Editar conta de Usuário"/>
-					<img onclick="excluir(<?php echo (int) $row['id']?>,'<?php echo htmlspecialchars($row['nome'], ENT_QUOTES)?>')" src="<?php echo $caminhoURL; ?>assets/delete.png" title="Excluir Conta de Usuário"/>
+					<?php echo icone('editar', 'Editar conta de Usuário', '', 'onclick="editar(event)"'); ?>
+					<?php echo icone('excluir', 'Excluir Conta de Usuário', 'icone-excluir', 'onclick="excluir('.(int) $row['id'].',\''.htmlspecialchars($row['nome'], ENT_QUOTES).'\')"'); ?>
 				</td>
 			</tr>
 			<?php

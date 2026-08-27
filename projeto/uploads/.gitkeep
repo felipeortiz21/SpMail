@@ -1,0 +1,3 @@
+Esta pasta guarda arquivos enviados pelo próprio sistema (ex: logo customizada
+via Configurações > Identidade Visual). Precisa existir e ser gravável pelo
+usuário do servidor web (ex: www-data).

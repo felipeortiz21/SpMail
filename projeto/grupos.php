@@ -9,6 +9,7 @@
 	include "header.php";
 	include "libs/seguranca.php";        //Conexão com o banco de dados.
 	include_once "libs/db.php";
+	include_once "libs/icones.php";
 	include "functions.php";
 	protegePagina();
 ?>
@@ -80,8 +81,8 @@
 						<td rel="titulo"><?php echo htmlspecialchars($row['titulo'])?></td>
 						<td rel="descricao"><?php echo htmlspecialchars($row['descricao'])?></td>
 						<td>
-							<img onclick="editar(event)" src="<?php echo $caminhoURL; ?>assets/editar.png" title="Editar Grupo">
-							<img onclick="excluir(event)" src="<?php echo $caminhoURL; ?>assets/delete.png" title="Excluir Grupo">
+							<?php echo icone('editar', 'Editar Grupo', '', 'onclick="editar(event)"'); ?>
+							<?php echo icone('excluir', 'Excluir Grupo', 'icone-excluir', 'onclick="excluir(event)"'); ?>
 						</td>
 					</tr>
 					<?php

@@ -32,21 +32,29 @@ if(isset($_REQUEST["nome"]) && isset($_REQUEST["senha"])){
 
 }
 
+$logoLogin = !empty($logoPath) ? $caminhoURL.$logoPath : $caminhoURL."assets/logo_maior.png";
+
 ?>
 
 <!DOCTYPE html>
-<html lang="pt_br">
+<html lang="pt_br" data-theme="light">
 	<head>
 		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 		<title>SpMail - Login</title>
+		<link rel="stylesheet" href="css/pico.classless.min.css">
 		<link rel="stylesheet" href="css/estilo.css">
+		<link rel="icon" type="image/png" href="assets/simbolo.png" />
 	</head>
 	<body>
 		<div class="login">
 			<center>
-				<img src="<?php echo $caminhoURL; ?>assets/logo_maior.png"/>
+				<img src="<?php echo htmlspecialchars($logoLogin); ?>" alt="<?php echo htmlspecialchars($nomeEmpresa); ?>"/>
 			</center>
-			<h1>Entre Para Enviar Emails</h1>
+			<h1>Entre para enviar emails</h1>
 			<form action="#" method="post">
 				<input type="text" name="nome" placeholder="Nome de Usuário / email"/>
 				<input type="password" name="senha" placeholder="Senha"/>

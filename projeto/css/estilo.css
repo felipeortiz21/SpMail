@@ -1,19 +1,52 @@
-body{
-    font-family: Roboto, Helvetica, sans-serif;
-    background-color: white;
-	color: #47555C;
-    margin: 0;
+/* SpMail — tema visual
+   Base: Pico.css (classless, vendorizado em pico.classless.min.css) cuida do
+   estilo dos elementos HTML puros (button, input, table, nav...). Este
+   arquivo só define os tokens de marca por cima do Pico e ajusta o layout
+   específico do sistema (menu, cards de formulário, tabelas de ação, etc). */
+
+:root{
+	/* Tema fixado em claro (ver data-theme="light" no <html>) - cores abaixo
+	   sobrescrevem a paleta padrão do Pico pela identidade da Spiral. */
+	--pico-font-family-sans-serif: 'Inter', system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+	--pico-font-family: var(--pico-font-family-sans-serif);
+
+	--pico-background-color: #ffffff;
+	--pico-color: #313b47;
+	--pico-h1-color: #1c2733;
+	--pico-h2-color: #1c2733;
+	--pico-h3-color: #1c2733;
+	--pico-muted-color: #6b7684;
+	--pico-border-radius: 8px;
+
+	--pico-primary: #1955c7;
+	--pico-primary-background: #1955c7;
+	--pico-primary-border: #1955c7;
+	--pico-primary-hover: #123f96;
+	--pico-primary-hover-background: #123f96;
+	--pico-primary-hover-border: #123f96;
+	--pico-primary-focus: rgba(25, 85, 199, 0.25);
+	--pico-primary-underline: rgba(25, 85, 199, 0.5);
+	--pico-primary-hover-underline: var(--pico-primary-hover);
+	--pico-primary-inverse: #ffffff;
+
+	--pico-form-element-border-color: #d6dce5;
+	--pico-form-element-focus-color: var(--pico-primary);
+
+	/* Tokens próprios (fora do sistema de nomes do Pico) */
+	--marca-azul: #1955c7;
+	--marca-azul-escuro: #0f2f57;
+	--marca-verde: #0f9d58;
+	--marca-amarelo: #e0a324;
+	--marca-vermelho: #d64545;
+	--marca-cinza-fundo: #f6f8fb;
+	--marca-cinza-borda: #e4e9f0;
+	--marca-sombra: 0 1px 3px rgba(20, 30, 50, 0.08), 0 1px 2px rgba(20, 30, 50, 0.06);
+	--marca-sombra-media: 0 4px 16px rgba(20, 30, 50, 0.10);
 }
 
-header.cabecalho{
-	text-align: center;
-	width: 100%;
-	margin: 0;
-	box-sizing: border-box;
-	padding: .5em;
-	height: 50px;
-	background-color: #246FD5;
-	box-shadow: 0 1px 15px rgba(0,0,0,.25);
+body{
+	background-color: var(--pico-background-color);
+	color: var(--pico-color);
 }
 
 iframe{
@@ -21,312 +54,57 @@ iframe{
 }
 
 a{
-	color: #1E71CB;
+	color: var(--marca-azul);
 	text-decoration: none;
-	transition: color .5s;
 }
 
 a:hover{
 	text-decoration: underline;
 }
 
-header.cabecalho img{
-	width: 40px;
-	height: auto;
-	position: absolute;
-	top:5px;
-	left: 5px;
-}
+/* --------------------------------------------------------------------
+   Cabeçalho / navegação
+   -------------------------------------------------------------------- */
 
-header.cabecalho h1{
-	color: white;
-	font-weight: normal;
+header.cabecalho{
 	text-align: center;
-	font-size: 1.2em;
-	margin: 0;
-	margin-bottom: .5em;
-}
-
-header.cabecalho h1{
-	position: absolute;
-	top: 14px;
-	left: 50px;
-}
-
-button#enviarEmail{
-    padding: .7em;
-    font-size: 1.2em;
-    display: block;
-    border: 0;
-    background-color: blue;
-    color: white;
-    margin-top: .4em;
-}
-
-input,textarea,select{
 	width: 100%;
+	margin: 0;
 	box-sizing: border-box;
-	padding: .7em;
-	font-size: 1em;
-	margin-right: 2em;
-	margin-bottom: 1em;
-	border: 1px solid #5F7AD0;
-	background-color: #f1f1ed;
-	border-radius: 4px;
-	color: #163B73;
-
-	transition: background .5s;
-}
-
-select{
-	width: auto;
-}
-
-input:focus,textarea:focus,select:focus{
-	outline: none;
-	background-color: #D0E6FD;
-}
-
-button{
-	padding: .7em;
-	font-size: 1em;
-	letter-spacing: 1px;
-	margin-right: 2em;
-	margin-bottom: 1em;
-	min-width: 20%;
-	background-color: #1F5BD4;
-	color: white;
-	border-radius: 4px;
-	border: none;
-	text-transform: uppercase;
-	
-	cursor: pointer;
-	/*box-shadow: 1px 1px 3px rgba(0,0,0,.6);*/
-	
-	transition: background .5s;
-}
-
-button:hover{
-	background-color: #277CF0;
-}
-
-.alert{
-	background-color: #FFFF99;
-	border: 2px solid #EFAD40;
-	color: #5C5013;
-	text-align: center;
-	padding: .5em 1em;
-	box-sizing: border-box;
-	border-radius: 10px;
-}
-
-div.tabelaEmails {
-    overflow: scroll;
-    overflow-x: hidden;
-}
-
-.area_tabela{
+	padding: .6em 1em;
+	min-height: 56px;
+	background: linear-gradient(135deg, var(--marca-azul) 0%, var(--marca-azul-escuro) 130%);
+	box-shadow: 0 2px 12px rgba(10, 30, 60, .18);
 	position: relative;
-	float: right;
-	box-sizing: border-box;
 }
 
-.area_tabela .tabela{
-	margin: 0;
-}
-
-.enviarEmail .crud{
-	width: 350px;
-}
-
-table {
-	width: 99%;
-	margin-top: 20px;
-	background-color: white;
-	font-size: .85em;
-}
-
-
-table caption{
-	color: #3856E1;
-	font-size: 16px;
-	background-color: white;
-	border-bottom: 1em;
-}
-
-table, tr, td, th {
-	
-	border-collapse: collapse;
-	padding: .4em;
-	margin: auto;
-}
-
-table td:first-child {
-    text-align: center;
-}
-
-td{
-	border-right: 2px solid white;
-	text-align: center;
-}
-
-table th{
-	color: #2884D9;
-	border-collapse: collapse;
-	border-bottom: 1px solid #8493AF;
-	padding: .4em;
-	font-weight: normal;
-	margin: auto;
-	color: #2884D9;
-}
-
-table img{
-	width: 24px;
+header.cabecalho center img{
+	width: 36px;
 	height: auto;
+	position: absolute;
+	top: 10px;
+	left: 16px;
+	border-radius: 6px;
+	background: rgba(255,255,255,.9);
+	padding: 3px;
 }
 
-table th td{
-	padding-bottom: .2em;
-	background-color: white;
-}
-
-tr:nth-child(even) {
-	background-color: #f1f1f5;
-}
-
-input[type=checkbox] {
-    display: inline-block;
-}
-
-input[disabled=true],input[name=id]{
-	background-color: #a7b3b2;
-	cursor: default;
-	color: #828676;
-	pointer-events: none;
-}
-
-
-div.wrap {
-	width: 90%;
-	margin: 0 auto;
-}
-
-
-
-div.wrap h1{
-	font-size: 1.5em;
-	margin: 0;
-	padding: 10px;
-	padding-bottom: 3px;
-	color: #4456DD;
-	box-sizing: border-box;
-	font-weight: normal;
-	border-bottom: 2px solid #302FA3;
-	margin-bottom: 1.1em;
-}
-
-
-div.confirma, div.so_tabela{
-	margin: 0 auto;
-	box-sizing: border-box;
-}
-
-
-
-
-div.confirma .crud{
-	width: 400px;
-}
-
-div.confirma h1, div.so_tabela{
-
-}
-
-div.confirma input{
-	max-width: 400px;
-}
-
-div.so_tabela .area_tabela{
-	float: none;
-	width: 100%;
-}
-
-
-div.botoes {
-    overflow: hidden;
-}
-
-div.botoes button {
-    margin-bottom: .5em;
-    font-size: 1em;
-    color: white;
-    padding: .5em 1em;
-    float: right;
-    cursor: pointer;
-}
-
-div.botoes button[type=reset]{
-	background-color: #deaf4a;
-}
-
-#cadastrarEmail {
-    font-size: .8em;
-    text-align: right;
-}
-
-#cadastrarEmail input {
-    color: #565656;
-    border: 1px solid #E1DFE8;
-    padding: 1em;
-    font-size: .9em;
-    min-width: 80%;
-}
-
-button#enviarCadastro{
-    display: block;
-    background-color: #00d5c0;
-    font-size: 1.2em;
-    color: white;
-    border: 0;
-    padding: .7em;
-    margin-left: 4.7em;
-}
-
-.login{
-	width: 280px;
-	margin: 0 auto;
-	margin-top: 10%;
-	padding: 40px;
-}
-
-.login img{
-	width: 100%;
-	height: auto;
-}
-
-.erro{
-	color: orange;
-	text-align: center;
-	font-size: .8em;
-}
-
-.login h1{
-	margin:0;
-	margin-bottom: 1em;
-	font-weight: normal;
-	color: #1870CD;
+header.cabecalho h1{
+	color: white;
+	font-weight: 600;
+	text-align: left;
 	font-size: 1.1em;
-	text-align: center;
-}
-
-textarea.emails{
-	display: block;
+	margin: 0;
+	position: absolute;
+	top: 16px;
+	left: 62px;
+	letter-spacing: .2px;
 }
 
 .menu{
 	position: absolute;
-	right: 5px;
-	top: 13px;
+	right: 16px;
+	top: 15px;
 	min-width: 600px;
 }
 
@@ -342,100 +120,394 @@ textarea.emails{
 
 .menu nav ul li{
 	text-align: right;
-	margin: 0 13px;
+	margin: 0 4px;
 	list-style: none;
 	display: inline-block;
-	color: #a8adae;
-	cursor: pointer;
 }
 
 .menu nav ul li a{
-	color: #8AEFFF;
+	color: rgba(255,255,255,.75);
 	text-decoration: none;
-	font-size: .8em;
+	font-size: .82em;
+	font-weight: 500;
+	letter-spacing: .3px;
+	padding: .5em .7em;
+	border-radius: 6px;
+	transition: background-color .15s, color .15s;
 }
 
 .menu nav ul li a:hover{
 	color: white;
+	background-color: rgba(255,255,255,.12);
+	text-decoration: none;
 }
 
-.alerta{
-	width: 650px;
-	margin-left: -162.5px;
-	box-shadow: 0 0 30px rgba(0,0,0,.5);
-	position: fixed;
-	left: 500px;
-	background-color: white;
-	z-index: 99999;
-	top: 2000000px;
-	-webkit-transition: .5s all ease-out;
-	-moz-transition: .5s all ease-out;
+.powered{
+	color: #b7c0cc !important;
+	font-size: .78em !important;
+	letter-spacing: .2px;
 }
 
-.alerta h3{
-	font-size: 1em;
-	color: #1e6154;
+/* --------------------------------------------------------------------
+   Formulários e botões (ajustes finos por cima do Pico)
+   -------------------------------------------------------------------- */
+
+input,textarea,select{
+	margin-bottom: .9em;
+}
+
+select{
+	width: auto;
+}
+
+button, [type=submit], [type=button]{
+	letter-spacing: .2px;
+	font-weight: 600;
+}
+
+div.botoes button {
+    margin-bottom: .5em;
+    padding: .6em 1.2em;
+    float: right;
+    cursor: pointer;
+    width: auto;
+}
+
+div.botoes button[type=reset]{
+	background-color: var(--marca-amarelo);
+	border-color: var(--marca-amarelo);
+}
+
+button.teste{
+	background-color: #2599c9;
+	border-color: #2599c9;
+}
+
+button.voltar{
+	background-color: var(--marca-amarelo);
+	border-color: var(--marca-amarelo);
+}
+
+.alert{
+	background-color: #FFF6DA;
+	border: 1px solid var(--marca-amarelo);
+	color: #6b5310;
 	text-align: center;
-	padding: .3em .6em;
+	padding: .7em 1em;
+	box-sizing: border-box;
+	border-radius: var(--pico-border-radius);
 }
 
-.alerta .conteudo{
-	padding: 1em;
-	color: #1e1e1e;
+.obs{
+	background-color: #E7F3FF;
+	border: 1px solid var(--marca-azul);
+	box-sizing: border-box;
+	padding: .6em 1em;
+	text-align: center;
+	border-radius: var(--pico-border-radius);
+	color: var(--marca-azul-escuro);
+	font-weight: 600;
+}
+
+/* --------------------------------------------------------------------
+   Layout geral (mantém a estrutura já existente, só refina o visual)
+   -------------------------------------------------------------------- */
+
+div.wrap {
+	width: 92%;
+	max-width: 1400px;
+	margin: 0 auto;
+	padding-top: 1.2em;
+}
+
+div.wrap h1{
+	font-size: 1.4em;
+	margin: 0;
+	padding: 0;
+	padding-bottom: .5em;
+	color: var(--pico-h1-color);
+	box-sizing: border-box;
+	font-weight: 600;
+	border-bottom: 2px solid var(--marca-cinza-borda);
+	margin-bottom: 1.2em;
 }
 
 .crud{
-	width: 300px;
-	padding: 0;
+	width: 320px;
+	padding: 1.2em;
 	float: left;
-	border-right: 1px solid #dedede;
+	border: 1px solid var(--marca-cinza-borda);
+	background-color: white;
+	border-radius: var(--pico-border-radius);
+	box-shadow: var(--marca-sombra);
 	margin: 0 auto;
-	margin: 15px;
-	margin-right: 0;
-	padding-right: 20px;
+	margin-right: 1.5em;
 	box-sizing: border-box;
 }
 
-h2.retorno_mensagem{
-	background-color: #ffffdc;
-	margin: 0;
-	padding: 3px 5px;
-	font-size: .8em;
-	text-align: center;
-	margin-bottom: 1em;
-	font-weight: normal;
-	color: #6d5022;
+.area_crud{
+	display: flex;
+	justify-content: space-between;
+	align-items: flex-start;
 }
 
-.conferir{
-	padding: 10px;
-	box-shadow: 0 2px 8px rgba(0,0,0,.3);
-	border: none;
+.area_crud .crud{
+	width: 380px;
+}
+
+.area_tabela{
+	position: relative;
+	float: right;
+	box-sizing: border-box;
+}
+
+.area_tabela .tabela{
+	margin: 0;
+}
+
+.area_tabela_crud{
+	width: calc(100% - 400px);
+	margin: 0 auto;
+}
+
+.area_tabela h3{
+	font-size: 1.05em;
+	margin: 0;
+	color: var(--marca-azul);
+	font-weight: 600;
+	margin-bottom: .5em;
+}
+
+/* --------------------------------------------------------------------
+   Tabelas
+   -------------------------------------------------------------------- */
+
+table {
+	width: 99%;
+	margin-top: 10px;
+	background-color: white;
+	font-size: .9em;
+	border-radius: var(--pico-border-radius);
+	overflow: hidden;
+}
+
+table caption{
+	color: var(--marca-azul);
+	font-size: 1em;
+	font-weight: 600;
+	background-color: white;
+	text-align: left;
+	padding-bottom: .5em;
+}
+
+table, tr, td, th {
+	border-collapse: collapse;
+	padding: .6em;
+	margin: auto;
+}
+
+table td:first-child {
+    text-align: center;
+}
+
+td{
+	border-right: none;
+	border-bottom: 1px solid var(--marca-cinza-borda);
+	text-align: center;
+}
+
+table th{
+	color: var(--pico-muted-color);
+	text-transform: uppercase;
+	font-size: .78em;
+	letter-spacing: .4px;
+	border-collapse: collapse;
+	border-bottom: 2px solid var(--marca-cinza-borda);
+	padding: .6em;
+	font-weight: 600;
+	margin: auto;
+}
+
+.icone{
+	width: 20px;
+	height: 20px;
+	vertical-align: middle;
+	cursor: pointer;
+	color: var(--pico-muted-color);
+	transition: color .15s, transform .1s;
+	display: inline-block;
+}
+
+.icone:hover{
+	color: var(--marca-azul);
+	transform: translateY(-1px);
+}
+
+.icone.icone-excluir:hover{
+	color: var(--marca-vermelho);
+}
+
+tr:nth-child(even) {
+	background-color: var(--marca-cinza-fundo);
+}
+
+tr:hover{
+	background-color: #EEF3FC;
+}
+
+td.erro{
+	color: var(--pico-muted-color);
+}
+td.enviando{
+	color: #1dc2af;
+}
+td.enviado{
+	color: var(--marca-verde);
+}
+td.nao_enviado{
+	color: var(--marca-amarelo);
+}
+
+input[disabled=true],input[name=id]{
+	background-color: #eef0f3;
+	cursor: default;
+	color: #99a1ab;
+	pointer-events: none;
+}
+
+/* --------------------------------------------------------------------
+   Telas de login (sistema + instalador)
+   -------------------------------------------------------------------- */
+
+.login{
+	width: 320px;
+	margin: 0 auto;
+	margin-top: 8%;
+	padding: 2.5em 2em;
+	background: white;
+	border-radius: 12px;
+	box-shadow: var(--marca-sombra-media);
+	border: 1px solid var(--marca-cinza-borda);
+}
+
+.login img{
+	width: 60%;
+	max-width: 160px;
+	height: auto;
+}
+
+.login h1{
+	margin: 0;
+	margin-top: 1em;
+	margin-bottom: 1em;
+	font-weight: 600;
+	color: var(--pico-h1-color);
+	font-size: 1.2em;
+	text-align: center;
+}
+
+.login button{
+	width: 100%;
+}
+
+.erro{
+	color: var(--marca-amarelo);
+	text-align: center;
+	font-size: .85em;
+}
+
+.login.instalador{
+	margin-top: 3em;
+	width: 90%;
+	max-width: 640px;
+	padding: 2.5em;
+}
+
+.login.instalador img{
+	width: 22%;
+	max-width: 140px;
+}
+
+.login.instalador p{
+	margin-top: 0;
+	font-size: .92em;
+}
+
+.login.instalador h2{
+	margin-top: 0;
+	color: var(--pico-muted-color);
+	text-align: center;
+	font-weight: 500;
+	font-size: 1em;
+}
+
+.login.instalador p.mini-info{
+	color: var(--pico-muted-color);
+	margin-top: 1em;
+	margin-bottom: .3em;
+	font-size: .85em;
+}
+
+.login .info{
+	font-size: .82em;
+	color: var(--pico-muted-color);
+	text-align: center;
+	margin-top: 1.5em;
+}
+
+/* --------------------------------------------------------------------
+   Composição / confirmação de email
+   -------------------------------------------------------------------- */
+
+div.confirma, div.so_tabela{
+	margin: 0 auto;
+	box-sizing: border-box;
+}
+
+div.confirma .crud{
+	width: 420px;
+}
+
+div.confirma input{
+	max-width: 420px;
+}
+
+div.so_tabela .area_tabela{
+	float: none;
+	width: 100%;
+}
+
+div.confirma .enviarEmail{
+	display: flex;
+	justify-content: space-between;
+	width: 100%;
+	flex-wrap: wrap;
+	gap: 1.5em;
+}
+
+div.confirma .enviarEmail .area_mensagem,.resumo{
+	width: calc(100% - 460px);
+	max-width: 800px;
+	margin: 0 auto;
 }
 
 .resumo{
-	font-size: .9em;
+	font-size: .92em;
 	width: 700px;
 	overflow: visible;
 	margin: 0 auto;
 	float: left;
-	margin-left: 20px;
-}
-
-.resumo iframe{
-	height: auto;
-	overflow: visible;
 }
 
 .resumo h2{
-	font-size: 1em;
-	font-weight: normal;
-	display:block;
+	font-size: 1.05em;
+	font-weight: 600;
+	display: block;
 	width: 100%;
-	padding: .3em 0;
+	padding: .4em 0;
 	margin: 0;
-	border-bottom: 1px solid #2183a0;
-	color: #2183a0;
+	border-bottom: 2px solid var(--marca-cinza-borda);
+	color: var(--marca-azul);
 	margin-bottom: 1em;
 }
 
@@ -444,181 +516,230 @@ h2.retorno_mensagem{
 	margin-bottom: 10px;
 }
 
+.conferir{
+	padding: 10px;
+	box-shadow: var(--marca-sombra-media);
+	border: 1px solid var(--marca-cinza-borda);
+	border-radius: var(--pico-border-radius);
+}
+
 .tela_confirmacao{
 	position: relative;
 	margin-top: 1em;
 	height: auto;
 }
 
-button.teste{
-	background-color: #26a4cd;
+/* Variáveis dinâmicas ({nome}/{email}/{telefone}) no compositor */
+.variaveis{
+	display: flex;
+	align-items: center;
+	gap: .5em;
+	margin-bottom: .8em;
 }
 
-button.voltar{
-	background-color: #d48332;
+.variaveis label{
+	font-size: .82em;
+	color: var(--pico-muted-color);
+	white-space: nowrap;
+	margin: 0;
 }
 
-#colorbox{
-	background-color:white;
-	padding: 20px;
-	border-radius: 10px;
-	outline: none;
-	box-shadow: 0 0 1em rgba(0,0,0,.2);
+.variaveis select{
+	margin-bottom: 0;
+	font-size: .85em;
 }
 
-#cboxOverlay{
-	position:fixed;
-	left:0;
-	right:0;
-	top:0;
-	bottom:0;
-	background-color:rgba(255,255,255,.85);
+/* --------------------------------------------------------------------
+   Seções colapsáveis (Configurações)
+   -------------------------------------------------------------------- */
+
+details.secao{
+	background: white;
+	border: 1px solid var(--marca-cinza-borda);
+	border-radius: var(--pico-border-radius);
+	margin-bottom: 1em;
+	box-shadow: var(--marca-sombra);
+	overflow: hidden;
 }
 
-#cboxContent button{
-	margin-top: 2em;
-	font-size: 16px;
-	text-transform: capitalize;
-	margin-left: 0;
-	padding: 10px;
+details.secao summary{
+	cursor: pointer;
+	padding: .9em 1.2em;
+	font-weight: 600;
+	color: var(--pico-h1-color);
+	background-color: var(--marca-cinza-fundo);
+	list-style: none;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+details.secao summary::-webkit-details-marker{
+	display: none;
+}
+
+details.secao summary::after{
+	content: "▾";
+	color: var(--pico-muted-color);
+	transition: transform .15s;
+}
+
+details.secao[open] summary::after{
+	transform: rotate(180deg);
+}
+
+details.secao summary small{
+	font-weight: 400;
+	color: var(--pico-muted-color);
+	margin-left: .6em;
+}
+
+details.secao .secao-corpo{
+	padding: 1.2em;
+}
+
+/* --------------------------------------------------------------------
+   Whitelabel / identidade visual
+   -------------------------------------------------------------------- */
+
+.logo-preview{
+	display: flex;
+	align-items: center;
+	gap: 1em;
+	margin-bottom: 1em;
+	padding: .8em;
+	background: var(--marca-cinza-fundo);
+	border-radius: var(--pico-border-radius);
+}
+
+.logo-preview img{
+	max-height: 48px;
+	max-width: 140px;
 	width: auto;
+	height: auto;
+	border-radius: 4px;
+	background: white;
+	padding: 4px;
+	border: 1px solid var(--marca-cinza-borda);
 }
 
+.logo-preview span{
+	font-size: .82em;
+	color: var(--pico-muted-color);
+}
+
+/* --------------------------------------------------------------------
+   Dashboard - seletor de campanha
+   -------------------------------------------------------------------- */
+
+.seletor-campanha{
+	display: flex;
+	align-items: center;
+	gap: .8em;
+	margin-bottom: 1.2em;
+	flex-wrap: wrap;
+}
+
+.seletor-campanha label{
+	font-size: .85em;
+	color: var(--pico-muted-color);
+	margin: 0;
+	white-space: nowrap;
+}
+
+.seletor-campanha select{
+	min-width: 320px;
+	margin-bottom: 0;
+}
+
+/* --------------------------------------------------------------------
+   Diversos
+   -------------------------------------------------------------------- */
 
 .filtro{
-	padding: 5px;
-	padding-top: 10px;
-	/*border-bottom: 1px solid #65aad4;*/
-	font-size: .8em;
-}
-
-td.erro{
-	color: #c7c7c7;
-}
-td.enviando{
-	color: #1dc2af;
-}
-td.enviado{
-	color: #03b717;
-}
-td.nao_enviado{
-	color: #e49c02;
-}
-
-
-div.confirma .enviarEmail{
-	display: flex;
-	justify-content: space-between;
-	width: 100%;
-}
-
-div.confirma .enviarEmail .area_mensagem,.resumo{
-	width: calc( 100% - 450px);
-	max-width: 800px;
-    margin: 0 auto;
-}
-
-.area_crud{
-	display: flex;
-	justify-content: space-between;
-}
-
-.area_crud .crud{
-	width: 400px;
-}
-
-.area_tabela_crud{
-	width: calc( 100% - 450px);
-	margin: 0 auto;
-}
-
-.mce-btn button:hover{
-	background-color: #C4DCFD;
-	border-radius: none;
-}
-
-.mce-container-body button,.mce-container button{
-	padding: 5px !important;
-	font-size: .8em !important;
-	box-shadow: none !important;
-}
-
-.mce-window-head .mce-close{
-	min-width: inherit;
-	border-radius: 0;
-	letter-spacing: normal;
-	text-transform: none;
-}
-
-.mce-window-head .mce-close:hover{
-	background-color: transparent;
-}
-
-
-.area_tabela h3{
-	font-size: 1.1em;
-	margin: 0;
-	color:#0D68AD;
-	font-weight: normal;
-	margin-bottom: .5em;
-}
-
-.mce-menubtn span{
-	font-size: .9em !important;
-}
-
-.obs{
-	background-color: #DAF6FF;
-	border: 2px solid #317DC4;
-	box-sizing: border-box;
-	padding: .5em 1em;
-	text-align: center;
-	border-radius: 10px;
-	color: #103887;
-	font-weight: bold;
+	padding: .5em 0;
+	font-size: .85em;
 }
 
 .instrucoes .pre{
 	width: 100%;
 	white-space: pre-wrap;
 	text-align: left;
-	box-shadow: 0 0 10px rgba(0,0,0,.5);
-	border-bottom: 2px solid lightgrey;
+	background: var(--marca-cinza-fundo);
+	border: 1px solid var(--marca-cinza-borda);
 	box-sizing: border-box;
-	padding: 1.5em;
-	font-family: Consolas, Andale Mono, Lucida Console, Lucida Sans Typewriter, Monaco, Courier New, monospace;
-	font-size: .9em;
-	line-height: 1.1em;
+	padding: 1.2em;
+	border-radius: var(--pico-border-radius);
+	font-family: Consolas, "Andale Mono", "Lucida Console", monospace;
+	font-size: .88em;
+	line-height: 1.2em;
+}
+
+.instrucoes .alert{
+	margin-top: .8em;
 }
 
 .retorno{
-	color: #1513CD;
+	color: var(--marca-azul);
+	font-weight: 600;
 }
 
-
-.login.instalador{
-	margin-top: 2em;
-	width: 80%;
-	max-width: 600px;
-}
-
-.login.instalador img{
-	width: 25%;
-}
-
-.login.instalador p{
-	margin-top: 0;
+.resultado-import{
+	background: var(--marca-cinza-fundo);
+	border: 1px solid var(--marca-cinza-borda);
+	border-radius: var(--pico-border-radius);
+	padding: 1em;
+	margin-top: .8em;
 	font-size: .9em;
 }
 
-.login.instalador h2{
-	margin-top: 0;
-	color: #182D57;
-	text-align: center;
+.resultado-import .ok{ color: var(--marca-verde); font-weight: 600; }
+.resultado-import .falha{ color: var(--marca-vermelho); font-weight: 600; }
+
+/* Colorbox (modais) */
+#colorbox{
+	background-color: white;
+	padding: 20px;
+	border-radius: 12px;
+	outline: none;
+	box-shadow: var(--marca-sombra-media);
 }
 
-.login.instalador p.mini-info{
-	color: #1F809E;
-	margin-top: 1em;
-	margin-bottom: 5px;
+#cboxOverlay{
+	position: fixed;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	background-color: rgba(20, 30, 50, .55);
+}
+
+#cboxContent button{
+	margin-top: 2em;
+	font-size: 1em;
+	margin-left: 0;
+	padding: .6em 1.2em;
+	width: auto;
+}
+
+/* TinyMCE - ajustes mínimos de convivência com o Pico */
+.mce-btn button:hover{
+	background-color: #E7F3FF;
+}
+
+.mce-container-body button,.mce-container button{
+	padding: 5px !important;
+	font-size: .8em !important;
+	box-shadow: none !important;
+	width: auto !important;
+	margin-bottom: 0 !important;
+}
+
+.mce-window-head .mce-close{
+	min-width: inherit;
+	border-radius: 0;
+}
+
+.mce-menubtn span{
+	font-size: .9em !important;
 }
