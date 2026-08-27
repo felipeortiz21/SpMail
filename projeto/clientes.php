@@ -156,6 +156,10 @@
 				<select name="grupos">
 					<option value="0" selected="selected">Selecione o Grupo</option>
 					<?php
+						// $rsGrupos já foi percorrido nos dois selects acima - precisa
+						// re-consultar antes de percorrer de novo (um mysqli_result só
+						// itera uma vez).
+						$rsGrupos = mysqli_query($con,$strSQLGrupos);
 						while($row = mysqli_fetch_array($rsGrupos)):
 					?>
 						<option value="<?php echo (int) $row['id']?>"><?php echo htmlspecialchars($row['titulo'])?></option>
